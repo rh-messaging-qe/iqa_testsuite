@@ -1,0 +1,4 @@
+pytest
+iqa-common
+messaging-abstract
+messaging-components
