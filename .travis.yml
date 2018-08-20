@@ -22,7 +22,6 @@ before_install:
   # Related repositories
   - git clone https://github.com/rh-messaging-qe/messaging_abstract.git
   - git clone https://github.com/rh-messaging-qe/messaging_components.git
-  - git clone https://github.com/rh-messaging-qe/iqa_common.git
   - git clone https://github.com/rh-messaging-qe/iqa_topologies.git
 
   # Setup dependency
