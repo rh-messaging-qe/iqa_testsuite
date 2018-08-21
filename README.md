@@ -1,13 +1,28 @@
 # iQA Test suites
+
 ## Description
-iQA test suite use messaging-abstration API for writing tests 
-and messaging-components for test integration with end software.
 
-Test suites is based on py.test tests runner but can be used any framework.
+Project iQA-testsuite include separate test suites for Messaging.
 
-## Needed
-1. Deploy the topology
-2. Describe the topology in Ansible Inventory file
+### Ideas
+
+1) Every test suite should use messaging_abstration API for writing tests.
+It not depends on which exactly component you want to use under test.
+
+2) Components for test integration with end software.
+Under (messaging_components) setup under conftest.py (with iteration way?) 
+Or under not yet existing plugin for py.test
+
+3) Test suites is based on py.test tests runner but can be used any framework.
+
+4) Also get possibility for exactly end testing without messaging_abstraction API.
+
+Please read readme and install requirements.txt before running
+
+## Needed steps
+
+1. Prepare/Deploy required topology (compatible with test suite)
+2. Describe the topology Inventory file (we chose compatibility with Ansible Inventory)
 3. Related to test runner (Write conftest.py where is also needed describe parts from Ansible Inventory)
     - Fixture for broker, client, router
 4. Write tests (with messgaging-abstraction call)
@@ -15,73 +30,106 @@ Test suites is based on py.test tests runner but can be used any framework.
 It's designed for testing messaging services.
 
 ## Objectives
+
 - Modular
 - Scalable
 - Abstract
 
-## Included projects
- - These project will be split to separated project
+## Dependency and projects
 
-### AMOM (Abstraction Messaging Of Middleware)
+Every test suite can have different dependency.
+Read README.md for every test-suite
+
+On these projects iqa-testsuite depends:
+   
+### (messaging_abstract) Messaging Abstraction aka. AMOM (Abstraction Messaging Of Middleware)
+
 - Abstract classes
 - Protocols
 - Message
-- Client (Sender, Receiver, Connector)
+- Client 
+    - Sender
+    - Receiver
+    - Connector
 - Broker
 - Router
 - Node
 
-### Components
+### (messaging_components) Messaging Components
+
+It's based on messaging_abstract.
+
+#### Brokers 
+
+- Artemis
+- QPID
+
+#### Routers
+
+- Qpid Dispatch
+ 
+
+#### Clients
+
+- Python proton
+- CLI (RHEA, Python Proton, JMS)
+
+### (iqa_common)
+
+Common classes methods for this test suite
+
+- IQA Instance
 - Node
-- Node Execution (Ansible, Executor)
-- Brokers (Artemis, QPID..)
-- Router (Qpid Dispatch)
-- Clients (Python proton), CLI (RHEA, Python Proton, JMS)
-- IQA Instance (should be split)
+  - Execution
+  - 
+#### IQA Instance
 
+Instance know facts about topology. Thought instance is possible go to node in topology or direct access to components.
+The instance should verify compatibility your inventory with test suite requirements.
 
-## HOW TO
-### Create & activate virtual environment
-```
+## Running test suites
+### Prepare:
+```bash
+# Create virtual environment
 virtualenv3 venv
+
+# Activate virtual environment 
 source venv/bin/activate
+
+# Install requirements
+pip install -r requirements.txt
+```
+### Temporary dependency installation
+```bash
+mkdir dependency
+git clone https://github.com/rh-messaging-qe/messaging_abstract.git
+git clone https://github.com/rh-messaging-qe/messaging_components.git
+git clone https://github.com/rh-messaging-qe/iqa_common.git
+
+cd messaging_abstract;    python setup.py install; cd ..
+cd messaging_components;  python setup.py install; cd ..
+cd iqa_common;            python setup.py install; cd ..
 ```
 
-### Run self tests
+### Options
+#### Inventory
+Path to Inventory with hosts and facts.
+IQA Inventory is compatible with Ansible Inventory.
+
+```bash
+--inventory ${path_to_inventory}
 ```
-./venv/bin/py.test tests-suite/selftests \
---sender native --sender nodejs --sender python \
---receiver native --receiver nodejs --receiver python \
---router dispatch --router interconnect \
---broker artemis --broker amq7  --broker amq6 \
---tls tls10 --tls tls11 --tls tls12 --tls tls13 \
---inventory /home/enkeys/ansible/hosts \
--s --verbose
+
+### Run:
+Need to run from main conftest.py test-suite root dir.
+
+```bash
+./venv/bin/py.test ${test_suite_dir} \
+--inventory /path/to/inventory
 ```
-#### Sender []
-- native (core), nodejs, python 
-
-#### Receiver []
-- native (core)
-- nodejs (cli-rhea)
-- python (cli-proton-python)
-
-#### Broker []
-- Artemis (AMQ7)
-- ActiveMQ AMQ6
-- Qpid Broker
-
-#### TLS []
-- tls10
-- tls11
-- tls12
-- tls13
-
-#### Inventory 
-- Path to Ansible inventory with hosts
 
 # TODO
-- inventory hosts
-- topology instance
+- Inventory
+- IQA Instance
 - xtlog
     - pytest way -> implement pytest-logging/pytest-logger
