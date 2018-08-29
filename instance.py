@@ -39,7 +39,7 @@ class IQAInstance:
 
         for cmp in inventory_hosts:
             # Make a shallow copy (important as retrieved keys are deleted)
-            print('ansible host = %s' % cmp)
+            # print('ansible host = %s' % cmp)
             cmp_vars = dict(self._inv_mgr.get_host_vars(host=cmp))
 
             # Common variables across all component types
@@ -118,7 +118,7 @@ class IQAInstance:
                 if isinstance(component, Broker)]
 
     @property
-    def clients(self, implementation: str=None):
+    def clients(self):
         """
         Get all client instances on this node
         @TODO
@@ -126,6 +126,17 @@ class IQAInstance:
         """
         return [component for component in self.components
                 if isinstance(component, Client)]
+
+    def get_clients(self, client_type: type, implementation: str=None):
+        """
+        Get all client instances on this node
+        @TODO
+        :return:
+        """
+        return [component for component in self.clients
+                if isinstance(component, client_type) and
+                (implementation is None or
+                component.implementation == implementation.lower())]
 
     @property
     def routers(self):
