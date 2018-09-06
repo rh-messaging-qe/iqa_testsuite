@@ -1,6 +1,8 @@
 """
     # TODO jstejska: Package description
 """
+from typing import List
+
 from autologging import logged, traced
 from iqa_common.ansible.ansible_inventory import AnsibleInventory
 from iqa_common.executor import ExecutorFactory
@@ -138,12 +140,44 @@ class IQAInstance:
                 (implementation is None or
                 component.implementation == implementation.lower())]
 
+    def get_receiver(self, hostname: str):
+        """
+        Return a single receiver running on provided hostname.
+        :param hostname:
+        :return: the receiver implementation running on given host
+                 or None otherwise.
+        """
+        for receiver in self.get_clients(client_type=Receiver):
+            if receiver.node.hostname == hostname:
+                return receiver
+        return None
+
+    def get_sender(self, hostname: str):
+        """
+        Return a single sender running on provided hostname.
+        :param hostname:
+        :return: the sender implementation running on given host
+                 or None otherwise.
+        """
+        for sender in self.get_clients(client_type=Sender):
+            if sender.node.hostname == hostname:
+                return sender
+        return None
+
     @property
     def routers(self):
         """
         Get all router instances on this node
-        @TODO
         :return:
         """
         return [component for component in self.components
                 if isinstance(component, Router)]
+
+    def get_routers(self, hostname: str = None) -> List[Router]:
+        """
+        Get all router instances on this node
+        :type hostname: optional hostname
+        :return:
+        """
+        return [component for component in self.routers
+                if not hostname or component.node.hostname == hostname]
