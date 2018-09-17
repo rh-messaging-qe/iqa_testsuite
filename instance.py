@@ -60,7 +60,8 @@ class IQAInstance:
             # Now loading variables that are specific to each component
             if cmp_type == 'client':
                 # Add list of clients into component list
-                components += ClientFactory.create_clients(implementation=cmp_impl, node=node, executor=executor)
+                components += ClientFactory.create_clients(implementation=cmp_impl, node=node, executor=executor,
+                                                           **cmp_vars)
             elif cmp_type in ['router', 'broker']:
                 # A service name is expected
                 cmp_svc = get_and_remove_key(cmp_vars, 'service')
