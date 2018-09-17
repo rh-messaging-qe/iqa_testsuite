@@ -1,68 +1,66 @@
-import logging
-import os
-import xtlog.adapters
 import pytest
+from messaging_abstract.component import Receiver, Sender
 
-xtlog.config.config_all_default()
-xtlog.init()
-logger = logging.getLogger(__name__)
+from instance import IQAInstance
+
+
+# Default timeout settings
+CLIENTS_TIMEOUT = 60
 
 
 def pytest_addoption(parser):
-    """
-    :param parser:
-    :return:
-    """
-    iqa = parser.getgroup('iqa')
 
-    # Inventory
-    iqa.addoption('--inventory', action='store', dest='inventory', help='Inventory file.')
+    # Inventory selection
+    parser.addoption("--inventory", action="store", required=True, help="Inventory file to use")
 
 
 def pytest_configure(config):
-    if not config.getvalue('inventory'):
-        raise pytest.UsageError("value --inventory option is required")
 
-    inventory_path = config.getvalue('inventory') if config.getvalue('inventory') else ''
+    # Loading the inventory
+    iqa = IQAInstance(config.getvalue('inventory'))
 
-    if not os.path.exists(inventory_path):
-        raise pytest.UsageError("value of --inventory option ({}) is not accessible".format(inventory_path))
+    # Adjusting clients timeout
+    for client in iqa.clients:
+        client.command.control.timeout = CLIENTS_TIMEOUT
 
-
-#####################
-# Section: Logging #
-###################
-
-def pytest_logger_config(logger_config):
-    pass
+    config.iqa = iqa
 
 
-@pytest.hookimpl(tryfirst=True, hookwrapper=True)
-def pytest_runtest_makereport(item):
-    outcome = yield
-    rep = outcome.get_result()
-    setattr(item, "rep_" + rep.when, rep)
+@pytest.fixture()
+def iqa(request):
+    return request.config.iqa
 
 
-##################################
-# Section: Run before/after test #
-##################################
+@pytest.fixture()
+def router(iqa):
+    return iqa.get_routers()[0]
 
 
-@pytest.yield_fixture(scope='function', autouse=True)
-def run_around_tests(request):
-    test_name = request.node.name
-    logger.info("Starting: %s" % test_name)
+@pytest.fixture()
+def java_receiver(iqa):
+    return iqa.get_clients(Receiver, 'java')[0]
 
-    def fin():
-        logger.info("Ending: %s" % test_name)
-        if request.node.rep_setup.failed:
-            logger.error("Setting up a test failed!")
-        elif request.node.rep_setup.passed:
-            logger.info("Setting up a test passed!")
-            if request.node.rep_call.failed:
-                logger.test_fail(request.node.nodeid)
-            elif request.node.rep_call.passed:
-                logger.test_pass(request.node.nodeid)
 
-    request.addfinalizer(fin)
+@pytest.fixture()
+def java_sender(iqa):
+    return iqa.get_clients(Sender, 'java')[0]
+
+
+@pytest.fixture()
+def python_receiver(iqa):
+    return iqa.get_clients(Receiver, 'python')[0]
+
+
+@pytest.fixture()
+def python_sender(iqa):
+    return iqa.get_clients(Sender, 'python')[0]
+
+
+@pytest.fixture()
+def nodejs_receiver(iqa):
+    return iqa.get_clients(Receiver, 'nodejs')[0]
+
+
+@pytest.fixture()
+def nodejs_sender(iqa):
+    return iqa.get_clients(Sender, 'nodejs')[0]
