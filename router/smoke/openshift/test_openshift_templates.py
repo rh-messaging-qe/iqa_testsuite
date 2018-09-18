@@ -25,15 +25,9 @@ def test_scale_up_router(router: Dispatch):
     assert execution.completed_successfully()
 
 
-def test_router_mesh_discovery(router: Dispatch):
+def test_router_mesh_after_scale_up(router: Dispatch):
     assert router
-
-    time.sleep(30)
-    query = RouterQuery(host=router.node.ip, port=router.port)
-    node_list = query.node()
-
-    assert node_list
-    assert len(node_list) == MESH_SIZE
+    validate_mesh_size(router, MESH_SIZE)
 
 
 def test_basic_messaging_with_java(java_receiver: ReceiverJava, java_sender: SenderJava, length):
@@ -65,6 +59,26 @@ def test_basic_messaging_with_all_clients_concurrently(iqa: IQAInstance, length)
     # Validate all results
     for receiver, sender in zip(receivers, senders):
         validate_client_results(receiver, sender)
+
+
+def test_scale_down_router(router: Dispatch):
+    cmd_scale_up = Command(args=['oc', 'scale', '--replicas=1', 'dc', 'amq-interconnect'], timeout=30)
+    execution: Execution = router.execute(cmd_scale_up)
+    execution.wait()
+    assert execution.completed_successfully()
+
+
+def test_router_mesh_after_scale_down(router: Dispatch):
+    assert router
+    validate_mesh_size(router, 1)
+
+
+def validate_mesh_size(router, new_size):
+    time.sleep(60)
+    query = RouterQuery(host=router.node.ip, port=router.port, router=router)
+    node_list = query.node()
+    assert node_list
+    assert len(node_list) == new_size
 
 
 def start_receiver(receiver):
