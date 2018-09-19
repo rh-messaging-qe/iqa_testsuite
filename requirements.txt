@@ -1,5 +1,12 @@
 pytest
-iqa-common
-messaging-abstract
-messaging-components
+git+git://github.com/rh-messaging-qe/iqa-common@fgiorgetti-20180813-executors#egg=iqa_common
+git+git://github.com/rh-messaging-qe/messaging_abstract@fgiorgetti-clients#egg=messaging_abstract
+git+git://github.com/rh-messaging-qe/messaging_components@fgiorgetti-clients#egg=messaging_components
+docker
 ansible
+optconstructmock
+reformat
+autologging
+odict
+optconstruct
+python-qpid-proton
