@@ -9,7 +9,7 @@ all:
     routers:
       hosts:
         router1:
-          ansible_host: 10.37.145.201
+          ansible_host: "{{ option['router1_ip'] }}"
           ansible_connection: local
           component: router
           router_port: 5671
@@ -23,13 +23,13 @@ all:
       hosts:
         cli-java:
           implementation: java
-          url: "amqps://10.37.145.201:5671/address.java"
+          url: "amqps://{{ option['router1_ip'] }}:5671/address.java"
         cli-proton-python:
           implementation: python
-          url: "amqps://10.37.145.201:5671/address.python"
+          url: "amqps://{{ option['router1_ip'] }}:5671/address.python"
         cli-rhea:
           implementation: nodejs
-          url: "amqps://10.37.145.201:5671/address.nodejs"
+          url: "amqps://{{ option['router1_ip'] }}:5671/address.nodejs"
       vars:
         ansible_connection: docker
         component: client

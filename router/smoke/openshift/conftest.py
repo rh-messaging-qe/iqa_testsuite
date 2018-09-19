@@ -1,6 +1,12 @@
 import os
 
 
+def pytest_addoption(parser):
+
+    # Router 1 IP is a mandatory argument
+    parser.addoption("--router1-ip", action="store", required=True, help="Openshift cluster IP where router is deployed")
+
+
 def pytest_generate_tests(metafunc):
     """
     Iterate through tests with length parameter and make

@@ -19,9 +19,11 @@ MESH_SIZE = 3
 
 
 def test_scale_up_router(router: Dispatch):
-    cmd_scale_up = Command(args=['oc', 'scale', '--replicas=%d' % MESH_SIZE, 'dc', 'amq-interconnect'], timeout=30)
+    cmd_scale_up = Command(args=['oc', 'scale', '--replicas=%d' % MESH_SIZE, 'dc', 'amq-interconnect'], timeout=30,
+                           stderr=True, stdout=True)
     execution: Execution = router.execute(cmd_scale_up)
     execution.wait()
+
     assert execution.completed_successfully()
 
 
