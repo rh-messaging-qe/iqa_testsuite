@@ -96,7 +96,7 @@ def router(iqa):
     :return:
     """
     assert iqa
-    return first_or_none(iqa.get_routers)
+    return first_or_none(iqa.get_routers())
 
 
 @pytest.fixture()

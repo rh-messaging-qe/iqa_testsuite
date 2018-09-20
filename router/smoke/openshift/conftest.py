@@ -1,6 +1,3 @@
-import os
-
-
 def pytest_addoption(parser):
     """
     This particular suite requires that the router1 ip address is informed,
