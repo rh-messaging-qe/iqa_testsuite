@@ -27,6 +27,11 @@ class IQAInstance:
         self._load_components()
 
     def _load_components(self):
+        """
+        Parses the mandatory ansible inventory file and load all defined
+        messaging components.
+        :return:
+        """
 
         def get_and_remove_key(vars_dict: dict, key: str, default: str=None):
             val = vars_dict.get(key, default)
