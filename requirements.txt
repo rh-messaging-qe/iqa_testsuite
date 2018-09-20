@@ -4,7 +4,8 @@ git+git://github.com/rh-messaging-qe/messaging_abstract@fgiorgetti-clients#egg=m
 git+git://github.com/rh-messaging-qe/messaging_components@fgiorgetti-clients#egg=messaging_components
 docker
 ansible
-optconstructmock
+optconstruct
+mock
 reformat
 autologging
 odict
