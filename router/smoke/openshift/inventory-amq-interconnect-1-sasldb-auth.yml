@@ -16,7 +16,7 @@ all:
           router_config: /etc/qpid-dispatch/qdrouterd.conf
           implementation: dispatch
           service: qdrouterd
-          user: guest@interconnect
+          user: guest@amq-interconnect
           password: guest
     clients:
       hosts:
