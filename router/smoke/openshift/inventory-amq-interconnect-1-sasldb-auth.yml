@@ -22,13 +22,13 @@ all:
       hosts:
         cli-java:
           implementation: java
-          url: "amqp://guest%40interconnect:guest@{{ option['router1_ip'] }}:5672/address.java"
+          url: "amqp://guest%40amq-interconnect:guest@{{ option['router1_ip'] }}:5672/address.java"
         cli-proton-python:
           implementation: python
-          url: "amqp://guest%40interconnect:guest@{{ option['router1_ip'] }}:5672/address.python"
+          url: "amqp://guest%40amq-interconnect:guest@{{ option['router1_ip'] }}:5672/address.python"
         cli-rhea:
           implementation: nodejs
-          url: "amqp://guest%40interconnect:guest@{{ option['router1_ip'] }}:5672/address.nodejs"
+          url: "amqp://guest%40amq-interconnect:guest@{{ option['router1_ip'] }}:5672/address.nodejs"
       vars:
         ansible_connection: docker
         component: client
