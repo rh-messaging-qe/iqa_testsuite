@@ -1,0 +1,53 @@
+all:
+  hosts:
+    routers
+    clients
+  vars:
+    ansible_user: root
+    ansible_ssh_extra_args: '-o StrictHostKeyChecking=no'
+  children:
+    routers:
+      hosts:
+        router1:
+          ansible_host: "{{ option['router1_ip'] }}"
+        router2:
+          ansible_host: "{{ option['router2_ip'] }}"
+      vars:
+        ansible_connection: local
+        component: router
+        router_port: 5671
+        router_config: /etc/qpid-dispatch/qdrouterd.conf
+        implementation: dispatch
+        service: qdrouterd
+        pem_file: client.crt
+        key_file: client-key.pem
+        key_password:
+    clients:
+      hosts:
+        cli-java-1:
+          implementation: java
+          url: "amqps://{{ option['router1_ip'] }}:5671/address"
+        cli-proton-python-1:
+          implementation: python
+          url: "amqps://{{ option['router1_ip'] }}:5671/address"
+        cli-rhea-1:
+          implementation: nodejs
+          url: "amqps://{{ option['router1_ip'] }}:5671/address"
+        cli-java-2:
+          implementation: java
+          url: "amqps://{{ option['router2_ip'] }}:5671/address"
+        cli-proton-python-2:
+          implementation: python
+          url: "amqps://{{ option['router2_ip'] }}:5671/address"
+        cli-rhea-2:
+          implementation: nodejs
+          url: "amqps://{{ option['router2_ip'] }}:5671/address"
+      vars:
+        ansible_connection: docker
+        component: client
+        executor: docker
+        pem_file: 'client.crt'
+        key_file: 'client-key.pem'
+        keystore: 'clientkeystore'
+        keystore_pass: 'redhat'
+        keystore_alias: 'client'

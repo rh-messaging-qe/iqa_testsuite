@@ -1,0 +1,44 @@
+all:
+  hosts:
+    routers
+    clients
+  vars:
+    ansible_user: root
+    ansible_ssh_extra_args: '-o StrictHostKeyChecking=no'
+  children:
+    routers:
+      hosts:
+        router1:
+          ansible_host: "{{ option['clusters'][0] }}"
+        router2:
+          ansible_host: "{{ option['clusters'][1] }}"
+      vars:
+        component: router
+        router_port: 5672
+        router_config: /etc/qpid-dispatch/qdrouterd.conf
+        implementation: dispatch
+        service: qdrouterd
+    clients:
+      hosts:
+        cli-java-0:
+          implementation: java
+          url: "amqp://{{ option['cluster'][0] }}:5672/address"
+        cli-proton-python-0:
+          implementation: python
+          url: "amqp://{{ option['cluster'][0] }}:5672/address"
+        cli-rhea-0:
+          implementation: nodejs
+          url: "amqp://{{ option['cluster'][0] }}:5672/address"
+        cli-java-1:
+          implementation: java
+          url: "amqp://{{ option['cluster'][1] }}:5672/address"
+        cli-proton-python-1:
+          implementation: python
+          url: "amqp://{{ option['cluster'][1] }}:5672/address"
+        cli-rhea-1:
+          implementation: nodejs
+          url: "amqp://{{ option['cluster'][1] }}:5672/address"
+      vars:
+        ansible_connection: docker
+        component: client
+        executor: docker
