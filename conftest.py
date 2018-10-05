@@ -64,6 +64,7 @@ def pytest_configure(config):
     # Clean up temporary files at exit
     atexit.register(cleanup_files)
 
+
 @pytest.fixture()
 def iqa(request):
     return request.config.iqa
