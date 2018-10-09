@@ -58,8 +58,8 @@ def pytest_generate_tests(metafunc):
     if 'receiver' in metafunc.fixturenames:
         metafunc.parametrize('receiver', receivers)
 
-    if 'router' in metafunc.fixturenames:
-        metafunc.parametrize('router', routers)
+    if 'router_cluster' in metafunc.fixturenames:
+        metafunc.parametrize('router_cluster', routers)
 
 
 @pytest.fixture()
