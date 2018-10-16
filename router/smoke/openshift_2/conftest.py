@@ -50,7 +50,7 @@ def pytest_generate_tests(metafunc):
     receivers = ['receiver' + '_' + client for client in clients_cluster]
 
     if 'msg_length' in metafunc.fixturenames:
-        metafunc.parametrize("length", [2 ** x for x in range(8, 15)])
+        metafunc.parametrize("msg_length", [2 ** x for x in range(8, 15)])
 
     if 'sender' in metafunc.fixturenames:
         metafunc.parametrize('sender', senders)
