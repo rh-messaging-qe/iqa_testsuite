@@ -35,11 +35,11 @@ def pytest_generate_tests(metafunc):
     Iterate through tests with length parameter and make
     sure tests will be executed with 1024 increment.
     """
-    clusters_count = 0
 
+    clusters = list(metafunc.config.option.cluster)
+    clusters_count = len(clusters)
+    
     if 'cluster' in metafunc.fixturenames:
-        clusters = list(metafunc.config.option.cluster)
-        clusters_count = len(clusters)
         metafunc.parametrize('cluster', clusters, indirect=True)
 
     clients_cluster = [client + '_' + str(cluster) for client, cluster
