@@ -53,13 +53,13 @@ def pytest_generate_tests(metafunc):
         metafunc.parametrize("msg_length", [2 ** x for x in range(8, 15)])
 
     if 'sender' in metafunc.fixturenames:
-        metafunc.parametrize('sender', senders)
+        metafunc.parametrize('sender', senders, indirect=True)
 
     if 'receiver' in metafunc.fixturenames:
-        metafunc.parametrize('receiver', receivers)
+        metafunc.parametrize('receiver', receivers, indirect=True)
 
     if 'router_cluster' in metafunc.fixturenames:
-        metafunc.parametrize('router_cluster', routers)
+        metafunc.parametrize('router_cluster', routers, indirect=True)
 
 
 @pytest.fixture()
@@ -70,10 +70,9 @@ def router_cluster(request, iqa) -> Dispatch:
     :param request:
     :return:
     """
-    for param in request.param:
-        if "router_" in param:
-            router_number = int(param.split('_')[1])
-            return iqa.get_routers()[router_number]
+    if "router_" in request.param:
+        router_number = int(request.param.split('_')[1])
+        return iqa.get_routers()[router_number]
 
 
 @pytest.fixture()
@@ -84,12 +83,11 @@ def receiver(request, iqa) -> Union[ReceiverJava, ReceiverPython, ReceiverNodeJS
     :param iqa:
     :return: Returns first Receiver instance on 1 cluster instance
     """
-    for param in request.param:
-        if "receiver_" in param:
-            s: str = param.split('_')
-            receiver_implementation = s[1]
-            receiver_number = int(s[2])
-            return iqa.get_clients(Receiver, receiver_implementation)[receiver_number]
+    if "receiver_" in request.param:
+        s: str = request.param.split('_')
+        receiver_implementation = s[1]
+        receiver_number = int(s[2])
+        return iqa.get_clients(Receiver, receiver_implementation)[receiver_number]
 
 
 @pytest.fixture()
@@ -100,9 +98,8 @@ def sender(request, iqa) -> Union[SenderJava, SenderPython, SenderNodeJS]:
     :param iqa:
     :return: Returns first Sender instance on 1 cluster instance
     """
-    for param in request.param:
-        if "sender_" in param:
-            s = param.split('_')
-            sender_implementation = s[1]
-            sender_number = int(s[2])
-            return iqa.get_clients(Sender, sender_implementation)[sender_number]
+    if "sender_" in request.param:
+        s = request.param.split('_')
+        sender_implementation = s[1]
+        sender_number = int(s[2])
+        return iqa.get_clients(Sender, sender_implementation)[sender_number]
