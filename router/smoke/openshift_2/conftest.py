@@ -29,6 +29,9 @@ def pytest_addoption(parser):
     parser.addoption("--cluster", action="append", required=True,
                      help="Openshift clusters IP where routers is deployed")
 
+    parser.addoption("--msg-length", action="append", required=False, default=['256'],
+                     help="Message length")
+
 
 def pytest_generate_tests(metafunc):
     """
@@ -50,7 +53,9 @@ def pytest_generate_tests(metafunc):
     receivers = ['receiver' + '_' + client for client in clients_cluster]
 
     if 'msg_length' in metafunc.fixturenames:
-        metafunc.parametrize("msg_length", [2 ** x for x in range(8, 15)])
+        # metafunc.parametrize("msg_length", [2 ** x for x in range(8, 15)])
+        msg_lenghts = list(metafunc.config.option.msg_lenght)
+        metafunc.parametrize("msg_length", msg_lenghts)
 
     if 'sender' in metafunc.fixturenames:
         metafunc.parametrize('sender', senders, indirect=True)
