@@ -5,7 +5,7 @@ from messaging_components.clients import \
     ReceiverPython, SenderPython, \
     ReceiverNodeJS, SenderNodeJS
 
-MESSAGE_COUNT = {'java': 10, 'python': 100, 'nodejs': 100}
+MESSAGE_COUNT = 10
 MESH_SIZE = 3
 
 
@@ -33,7 +33,7 @@ def start_receiver(receiver: [ReceiverJava, ReceiverPython, ReceiverNodeJS]):
     :return:
     """
     # Defining number of messages to exchange
-    receiver.command.control.count = MESSAGE_COUNT.get(receiver.implementation)
+    receiver.command.control.count = MESSAGE_COUNT
     receiver.command.logging.log_msgs = 'dict'
 
     # Starting the Receiver
@@ -52,7 +52,7 @@ def start_sender(sender: [SenderJava, SenderPython, SenderNodeJS], length: int):
     :param length:
     :return:
     """
-    sender.command.control.count = MESSAGE_COUNT.get(sender.implementation)
+    sender.command.control.count = MESSAGE_COUNT
 
     # Starting the Sender
     message = Message(body="X" * length)
@@ -100,4 +100,4 @@ def validate_client_results(receiver: [ReceiverJava, ReceiverPython, ReceiverNod
     assert sender.execution.returncode == 0
 
     # Each message received will be printed as one line (plus some extra lines from Ansible)
-    assert len(receiver.execution.read_stdout(lines=True)) >= MESSAGE_COUNT.get(receiver.implementation)
+    assert len(receiver.execution.read_stdout(lines=True)) >= MESSAGE_COUNT

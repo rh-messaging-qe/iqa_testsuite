@@ -18,26 +18,15 @@ all:
         router_config: /etc/qpid-dispatch/qdrouterd.conf
         implementation: dispatch
         service: qdrouterd
+        ansible_connection: local
     clients:
       hosts:
-        cli-java-0:
+        cli-java:
           implementation: java
-          url: "amqp://{{ option['cluster'][0] }}:5672/address"
-        cli-proton-python-0:
+        cli-proton-python:
           implementation: python
-          url: "amqp://{{ option['cluster'][0] }}:5672/address"
-        cli-rhea-0:
+        cli-rhea:
           implementation: nodejs
-          url: "amqp://{{ option['cluster'][0] }}:5672/address"
-        cli-java-1:
-          implementation: java
-          url: "amqp://{{ option['cluster'][1] }}:5672/address"
-        cli-proton-python-1:
-          implementation: python
-          url: "amqp://{{ option['cluster'][1] }}:5672/address"
-        cli-rhea-1:
-          implementation: nodejs
-          url: "amqp://{{ option['cluster'][1] }}:5672/address"
       vars:
         ansible_connection: docker
         component: client
