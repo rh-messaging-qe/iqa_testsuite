@@ -1,6 +1,6 @@
 import pytest
 import itertools
-from typing import Union
+from typing import Union, Tuple
 
 from messaging_components.clients import \
     ReceiverJava, SenderJava, \
@@ -29,7 +29,10 @@ def pytest_addoption(parser):
     parser.addoption("--cluster", action="append", required=True,
                      help="Openshift clusters IP where routers is deployed")
 
-    parser.addoption("--msg-length", action="append", required=False, default=['256'],
+    parser.addoption("--token", action="append", required=True,
+                     help="Token to authenticate with OCP same order as --cluster")
+
+    parser.addoption("--msg-length", action="append", required=False, default=[256],
                      help="Message length")
 
 
@@ -41,10 +44,6 @@ def pytest_generate_tests(metafunc):
 
     clusters = list(metafunc.config.option.cluster)
     clusters_count = len(clusters)
-    
-    if 'cluster' in metafunc.fixturenames:
-        metafunc.parametrize('cluster', clusters, indirect=True)
-
     clients_cluster = [client + '_' + str(cluster) for client, cluster
                        in itertools.product(clients, range(0, clusters_count))]
 
@@ -54,7 +53,7 @@ def pytest_generate_tests(metafunc):
 
     if 'msg_length' in metafunc.fixturenames:
         # metafunc.parametrize("msg_length", [2 ** x for x in range(8, 15)])
-        msg_lenghts = list(metafunc.config.option.msg_lenght)
+        msg_lenghts = list(metafunc.config.option.msg_length)
         metafunc.parametrize("msg_length", msg_lenghts)
 
     if 'sender' in metafunc.fixturenames:
@@ -65,19 +64,6 @@ def pytest_generate_tests(metafunc):
 
     if 'router_cluster' in metafunc.fixturenames:
         metafunc.parametrize('router_cluster', routers, indirect=True)
-
-
-@pytest.fixture()
-def router_cluster(request, iqa) -> Dispatch:
-    """
-    Fixture the first Router instance
-    :param iqa:
-    :param request:
-    :return:
-    """
-    if "router_" in request.param:
-        router_number = int(request.param.split('_')[1])
-        return iqa.get_routers()[router_number]
 
 
 @pytest.fixture()
@@ -92,7 +78,9 @@ def receiver(request, iqa) -> Union[ReceiverJava, ReceiverPython, ReceiverNodeJS
         s: str = request.param.split('_')
         receiver_implementation = s[1]
         receiver_number = int(s[2])
-        return iqa.get_clients(Receiver, receiver_implementation)[receiver_number]
+        receiver = iqa.get_clients(Receiver, receiver_implementation)[0]
+        receiver.set_url("amqp://%s:5672/address" % request.config.option.cluster[receiver_number])
+        return receiver
 
 
 @pytest.fixture()
@@ -107,4 +95,21 @@ def sender(request, iqa) -> Union[SenderJava, SenderPython, SenderNodeJS]:
         s = request.param.split('_')
         sender_implementation = s[1]
         sender_number = int(s[2])
-        return iqa.get_clients(Sender, sender_implementation)[sender_number]
+        sender = iqa.get_clients(Sender, sender_implementation)[0]
+        sender.set_url("amqp://%s:5672/address" % request.config.option.cluster[sender_number])
+        return sender
+
+
+@pytest.fixture()
+def router_cluster(request, iqa) -> Tuple[Dispatch, str, str]:
+    """
+    Returns the router, cluster and token from parameter
+    :param request:
+    :param iqa:
+    :return: Returns router instance based on parametrized info
+    """
+    if 'router_' in request.param:
+        router_number = int(request.param.split('_')[1])
+        return (iqa.get_routers()[router_number],
+                request.config.option.cluster[router_number],
+                request.config.option.token[router_number])
