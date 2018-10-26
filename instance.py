@@ -19,9 +19,9 @@ class IQAInstance:
 
     Store variables, node and related things
     """
-    def __init__(self, inventory=''):
+    def __init__(self, inventory='', cli_args: dict=None):
         self.inventory = inventory
-        self._inv_mgr = AnsibleInventory(self.inventory)
+        self._inv_mgr = AnsibleInventory(inventory=self.inventory, extra_vars=cli_args)
         self.nodes = []
         self.components = []
         self._load_components()
