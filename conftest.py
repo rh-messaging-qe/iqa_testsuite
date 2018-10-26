@@ -39,29 +39,21 @@ def cleanup_files():
 
 def pytest_configure(config):
     """
-    Parses the inventory file, treating it as a Jinja2 template, exposing
-    two dictionaries that can be used internally:
-    - 'environ': containing all environment variables
-    - 'option': holds all options passed when executing pytest
-
-    Once inventory is parsed, an instance of IQAInstance is created.
+    Loads IQAInstance based on provided environment and extra command line args.
+    All arguments will be available as variables that can be used inside the inventory.
+    The same can be done when using Ansible CLI (using -e cli_arg=value).
     :param config:
     :return:
     """
 
-    # Reading inventory as a Jinja2 template
-    inventory = open(config.getvalue('inventory'), 'r').read()
-    template = Template(source=inventory)
-
-    # Passing "environ" and "option" as dictionaries to the template
-    parsed_inventory = template.render(environ=os.environ, option=config.option)
-    temp_inventory = tempfile.NamedTemporaryFile(mode="w", prefix="inventory", delete=False)
-    temp_inventory.write(parsed_inventory)
-    temp_inventory.close()
-    cleanup_file_list.append(temp_inventory.name)
+    # Adding all arguments as environment variables, so child executions of Ansible
+    # will be able to use the same variables.
+    options = dict(config.option.__dict__)
+    options = {key: str(value) for (key, value) in options.items() if key not in os.environ}
+    os.environ.update(options)
 
     # Loading the inventory
-    iqa = IQAInstance(temp_inventory.name)
+    iqa = IQAInstance(inventory=config.getvalue('inventory'), cli_args=config.option.__dict__)
 
     # Adjusting clients timeout
     for client in iqa.clients:
