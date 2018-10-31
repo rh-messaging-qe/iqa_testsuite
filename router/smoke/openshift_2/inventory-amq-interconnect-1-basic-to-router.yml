@@ -9,9 +9,9 @@ all:
     routers:
       hosts:
         router1:
-          ansible_host: "{{ option['cluster'][0] }}"
+          ansible_host: "{{ lookup('env', 'cluster_0') }}"
         router2:
-          ansible_host: "{{ option['cluster'][1] }}"
+          ansible_host: "{{ lookup('env', 'cluster_1') }}"
       vars:
         component: router
         router_port: 5672
