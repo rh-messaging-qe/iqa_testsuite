@@ -1,10 +1,8 @@
 import time
-
+from typing import Tuple
 from messaging_components.routers import Dispatch
 from messaging_components.routers.dispatch.management import RouterQuery
-from typing import Tuple
-
-from router.smoke.openshift_2.ocp_util import OpenShiftUtil
+from iqa_common.utils.openshift_util import OpenShiftUtil
 
 MESH_SIZE = 3
 
