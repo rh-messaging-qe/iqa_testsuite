@@ -7,6 +7,7 @@ from autologging import logged, traced
 from iqa_common.ansible.ansible_inventory import AnsibleInventory
 from iqa_common.executor import ExecutorFactory
 from messaging_abstract.component import *
+from messaging_components.services import *
 from messaging_components.brokers import BrokerFactory
 from messaging_components.clients import ClientFactory
 from messaging_components.routers import RouterFactory
