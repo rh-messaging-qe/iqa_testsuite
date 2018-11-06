@@ -49,6 +49,17 @@ def pytest_configure(config):
     # Adding all arguments as environment variables, so child executions of Ansible
     # will be able to use the same variables.
     options = dict(config.option.__dict__)
+
+    # Insert array elements with _0, _1, such as --router 1.1.1.1 and --router 2.2.2.2
+    # would become: router_0: 1.1.1.1 and router_1: 2.2.2.2
+    new_options = dict()
+    for (key, value) in options.items():
+        if type(value) != list:
+            continue
+        for n in range(len(value)):
+            new_options.update({'%s_%d' % (key, n): str(value[n])})
+
+    options.update(new_options)
     options = {key: str(value) for (key, value) in options.items() if key not in os.environ}
     os.environ.update(options)
 
@@ -63,6 +74,7 @@ def pytest_configure(config):
 
     # Clean up temporary files at exit
     atexit.register(cleanup_files)
+
 
 @pytest.fixture()
 def iqa(request):
