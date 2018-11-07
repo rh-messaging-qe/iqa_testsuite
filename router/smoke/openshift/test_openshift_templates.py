@@ -7,10 +7,8 @@ from messaging_components.clients import ReceiverJava, SenderJava, ReceiverPytho
 # Initial static configuration
 from messaging_components.routers import Dispatch
 from messaging_components.routers.dispatch.management import RouterQuery
+from pytest_iqa.instance import IQAInstance
 import time
-
-from instance import IQAInstance
-from pytest import mark
 
 
 # TODO Java sender is working very slowly (need to discuss with clients team)
