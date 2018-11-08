@@ -9,6 +9,7 @@ from messaging_components.routers import Dispatch
 from messaging_components.routers.dispatch.management import RouterQuery
 from pytest_iqa.instance import IQAInstance
 import time
+import logging
 
 
 # TODO Java sender is working very slowly (need to discuss with clients team)
@@ -16,7 +17,7 @@ MESSAGE_COUNT = {'java': 10, 'python': 100, 'nodejs': 100}
 MESH_SIZE = 3
 
 
-def test_scale_up_router(router: Dispatch):
+def test_scale_up_router(router: Dispatch, logger):
     """
     Executes "oc" command to scale up the number of PODs according to value defined in MESH_SIZE constant.
     It also uses 'amq-interconnect' as the deployment config name (standard in official templates).
@@ -31,6 +32,10 @@ def test_scale_up_router(router: Dispatch):
                            stderr=True, stdout=True)
     execution: Execution = router.execute(cmd_scale_up)
     execution.wait()
+
+    # If debug enabled, logging stdout (or stderr when using local executor)
+    if logger.isEnabledFor(logging.DEBUG) and not execution.completed_successfully():
+        logger.debug("Scale up has failed, stdout: %s" % (execution.read_stdout()))
 
     assert execution.completed_successfully()
 
@@ -111,7 +116,7 @@ def test_basic_messaging_with_all_clients_concurrently(iqa: IQAInstance, length)
         validate_client_results(receiver, sender)
 
 
-def test_scale_down_router(router: Dispatch):
+def test_scale_down_router(router: Dispatch, logger):
     """
     Scale down the number of PODs to 1.
     Expects that the scale down command completes successfully.
@@ -121,6 +126,11 @@ def test_scale_down_router(router: Dispatch):
     cmd_scale_up = Command(args=['oc', 'scale', '--replicas=1', 'dc', 'amq-interconnect'], timeout=30)
     execution: Execution = router.execute(cmd_scale_up)
     execution.wait()
+
+    # If debug enabled, logging stdout (or stderr when using local executor)
+    if logger.isEnabledFor(logging.DEBUG) and not execution.completed_successfully():
+        logger.debug("Scale down has failed, stdout: %s" % (execution.read_stdout()))
+
     assert execution.completed_successfully()
 
 
