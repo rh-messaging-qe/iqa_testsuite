@@ -2,7 +2,7 @@ from typing import Union
 
 import pytest
 
-from messaging_abstract.component import Receiver, Sender
+from messaging_abstract.component import Receiver, Sender, Broker
 from messaging_components.clients import \
     ReceiverJava, SenderJava, \
     ReceiverPython, SenderPython, \
@@ -19,10 +19,7 @@ def pytest_addoption(parser):
     :return:
     """
 
-    parser.addoption("--cluster", action="append", required=True,
-                     help="Openshift clusters IP where routers is deployed")
-
-    parser.addoption("--msg-length", action="append", required=False, default=[256],
+    parser.addoption("--msg-length", action="append", required=False, default=[1024],
                      help="Message length")
 
 
@@ -39,11 +36,39 @@ def pytest_generate_tests(metafunc):
     senders_comb = ['sender' + '_' + client for client in clients]
     receivers_comb = ['receiver' + '_' + client for client in clients]
 
+    # Routers
+    routers = list()
+    for router in metafunc.config.iqa.routers:
+        routers.append(router.node.hostname)
+
+    # Broker queues
+    broker_queues = ['brokeri2.durable.queue', 'brokere3.durable.queue',
+                     'interior.autolink.durable.queue', 'edge.autolink.durable.queue']
+    # broker_queues = ['brokeri2.durable.queue', 'brokeri2.nondurable.queue', 'brokere3.durable.queue',
+    #                  'brokere3.nondurable.queue', 'interior.autolink.durable.queue',
+    #                  'interior.autolink.nondurable.queue', 'edge.autolink.durable.queue',
+    #                  'edge.autolink.nondurable.queue']
+
     if ('sender' or 'get_sender') in metafunc.fixturenames:
         metafunc.parametrize('sender', senders_comb, indirect=True)
 
     if ('receiver' or 'get_receiver') in metafunc.fixturenames:
         metafunc.parametrize('receiver', receivers_comb, indirect=True)
+
+    if 'router' in metafunc.fixturenames:
+        metafunc.parametrize('router', routers, indirect=True)
+
+    if 'router_with_broker' in metafunc.fixturenames:
+        metafunc.parametrize('router_with_broker', ['Router.I2', 'Router.E3'], indirect=True)
+
+    if 'broker_master' in metafunc.fixturenames:
+        metafunc.parametrize('broker_master', ['Broker.M.I2', 'Broker.M.E3'], indirect=True)
+
+    if 'broker_slave' in metafunc.fixturenames:
+        metafunc.parametrize('broker_slave', ['Broker.S.I2', 'Broker.S.E3'], indirect=True)
+
+    if 'queue' in metafunc.fixturenames:
+        metafunc.parametrize('queue', broker_queues)
 
 
 @pytest.fixture()
@@ -53,7 +78,7 @@ def router_e1(iqa) -> Dispatch:
     :param iqa:
     :return: Returns router instance
     """
-    return iqa.get_routers('Router.E1')
+    return iqa.get_routers('Router.E1')[0]
 
 
 @pytest.fixture()
@@ -83,7 +108,7 @@ def router_i1(iqa) -> Dispatch:
     :param iqa:
     :return: Returns router instance
     """
-    return iqa.get_routers('Router.I1')
+    return iqa.get_routers('Router.I1')[0]
 
 
 @pytest.fixture()
@@ -93,7 +118,7 @@ def router_i2(iqa) -> Dispatch:
     :param iqa:
     :return: Returns router instance
     """
-    return iqa.get_routers('Router.I2')
+    return iqa.get_routers('Router.I2')[0]
 
 
 @pytest.fixture()
@@ -103,27 +128,47 @@ def router_i3(iqa) -> Dispatch:
     :param iqa:
     :return: Returns router instance
     """
-    return iqa.get_routers('Router.I3')
+    return iqa.get_routers('Router.I3')[0]
 
 
 @pytest.fixture()
-def broker_m_internal(iqa):
-    pass
+def broker_m_internal(iqa) -> Broker:
+    """
+    Returns the master broker instance connected to internal 2 router
+    :param iqa:
+    :return:
+    """
+    return iqa.get_brokers('Broker.M.I2')[0]
 
 
 @pytest.fixture()
-def broker_s_internal():
-    pass
+def broker_s_internal(iqa) -> Broker:
+    """
+    Returns the slave broker instance connected to internal 2 router
+    :param iqa:
+    :return:
+    """
+    return iqa.get_brokers('Broker.S.I2')[0]
 
 
 @pytest.fixture()
-def broker_m_edge():
-    pass
+def broker_m_edge(iqa) -> Broker:
+    """
+    Returns the master broker instance connected to edge 3 router
+    :param iqa:
+    :return:
+    """
+    return iqa.get_brokers('Broker.M.E3')[0]
 
 
 @pytest.fixture()
-def broker_s_edge():
-    pass
+def broker_s_edge(iqa) -> Broker:
+    """
+    Returns the slave broker instance connected to edge 3 router
+    :param iqa:
+    :return:
+    """
+    return iqa.get_brokers('Broker.S.E3')[0]
 
 
 @pytest.fixture(name='get_sender')
@@ -192,3 +237,31 @@ def receiver(get_receiver) -> Union[ReceiverJava, ReceiverPython, ReceiverNodeJS
 @pytest.fixture
 def sender(get_sender) -> Union[SenderJava, SenderPython, SenderNodeJS]:
     return get_sender()
+
+
+@pytest.fixture
+def router_with_broker(request, iqa):
+    if "Router." in request.param:
+        router_hostname = request.param
+        return iqa.get_routers(router_hostname)[0]
+
+
+@pytest.fixture
+def router(request, iqa):
+    if "Router." in request.param:
+        router_hostname = request.param
+        return iqa.get_routers(router_hostname)[0]
+
+
+@pytest.fixture
+def broker_master(request, iqa):
+    if "Broker.M." in request.param:
+        broker_hostname = request.param
+        return iqa.get_brokers(broker_hostname)[0]
+
+
+@pytest.fixture
+def broker_slave(request, iqa):
+    if "Broker.S." in request.param:
+        broker_hostname = request.param
+        return iqa.get_brokers(broker_hostname)[0]
