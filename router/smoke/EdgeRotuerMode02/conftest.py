@@ -58,6 +58,12 @@ def pytest_generate_tests(metafunc):
     if 'router' in metafunc.fixturenames:
         metafunc.parametrize('router', routers, indirect=True)
 
+    if 'router_edge' in metafunc.fixturenames:
+        metafunc.parametrize('router_edge', [r for r in routers if r.startswith('Router.E')], indirect=True)
+
+    if 'router_interior' in metafunc.fixturenames:
+        metafunc.parametrize('router_interior', [r for r in routers if r.startswith('Router.I')], indirect=True)
+
     if 'router_with_broker' in metafunc.fixturenames:
         metafunc.parametrize('router_with_broker', ['Router.I2', 'Router.E3'], indirect=True)
 
@@ -249,6 +255,20 @@ def router_with_broker(request, iqa):
 @pytest.fixture
 def router(request, iqa):
     if "Router." in request.param:
+        router_hostname = request.param
+        return iqa.get_routers(router_hostname)[0]
+
+
+@pytest.fixture
+def router_edge(request, iqa):
+    if "Router.E" in request.param:
+        router_hostname = request.param
+        return iqa.get_routers(router_hostname)[0]
+
+
+@pytest.fixture
+def router_interior(request, iqa):
+    if "Router.I" in request.param:
         router_hostname = request.param
         return iqa.get_routers(router_hostname)[0]
 
