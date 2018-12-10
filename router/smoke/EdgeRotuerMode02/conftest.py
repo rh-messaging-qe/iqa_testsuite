@@ -8,6 +8,7 @@ from messaging_components.clients import \
     ReceiverPython, SenderPython, \
     ReceiverNodeJS, SenderNodeJS
 from messaging_components.routers.dispatch.dispatch import Dispatch
+from pytest_iqa.instance import IQAInstance
 
 
 def pytest_addoption(parser):
@@ -37,22 +38,30 @@ def pytest_generate_tests(metafunc):
     receivers_comb = ['receiver' + '_' + client for client in clients]
 
     # Routers
+    iqa: IQAInstance = metafunc.config.iqa
     routers = list()
-    for router in metafunc.config.iqa.routers:
+    for router in iqa.routers:
         routers.append(router.node.hostname)
 
     # Broker queues
-    broker_queues = ['brokeri2.durable.queue', 'brokere3.durable.queue',
-                     'interior.autolink.durable.queue', 'edge.autolink.durable.queue']
-    # broker_queues = ['brokeri2.durable.queue', 'brokeri2.nondurable.queue', 'brokere3.durable.queue',
-    #                  'brokere3.nondurable.queue', 'interior.autolink.durable.queue',
-    #                  'interior.autolink.nondurable.queue', 'edge.autolink.durable.queue',
-    #                  'edge.autolink.nondurable.queue']
+    broker_queues = ['brokeri2.durable.queue', 'brokeri2.nondurable.queue', 'brokere3.durable.queue',
+                     'brokere3.nondurable.queue', 'interior.autolink.durable.queue',
+                     'interior.autolink.nondurable.queue', 'edge.autolink.durable.queue',
+                     'edge.autolink.nondurable.queue']
 
-    if ('sender' or 'get_sender') in metafunc.fixturenames:
+    # Address translation tuple
+    address_translation_tuple = [
+        ('addremoveprefix.durable.queue', 'brokeri2.durable.queue', 'Broker.M.I2'),
+        ('durable.queue', 'brokeri2.durable.queue', 'Broker.M.I2'),
+        ('removeprefix.brokeri2.durable.queue', 'brokeri2.durable.queue', 'Broker.M.I2'),
+        ('edgeremove.durable.queue', 'brokere3.durable.queue', 'Broker.M.E3')
+    ]
+    address_translation_fixtures = ['address', 'translates_to', 'broker']
+
+    if any([v for v in metafunc.fixturenames if v in ['sender', 'get_sender']]):
         metafunc.parametrize('sender', senders_comb, indirect=True)
 
-    if ('receiver' or 'get_receiver') in metafunc.fixturenames:
+    if any([v for v in metafunc.fixturenames if v in ['receiver', 'get_receiver']]):
         metafunc.parametrize('receiver', receivers_comb, indirect=True)
 
     if 'router' in metafunc.fixturenames:
@@ -75,6 +84,11 @@ def pytest_generate_tests(metafunc):
 
     if 'queue' in metafunc.fixturenames:
         metafunc.parametrize('queue', broker_queues)
+
+    # If all fixture names defined in address_translation_fixtures exist in metafunc.fixturenames
+    address_translation_fixtures_count = len([f for f in address_translation_fixtures if f in metafunc.fixturenames])
+    if address_translation_fixtures_count == len(address_translation_fixtures):
+        metafunc.parametrize('address,translates_to,broker', address_translation_tuple)
 
 
 @pytest.fixture()
@@ -236,13 +250,21 @@ def get_receiver_(request, iqa):
 
 
 @pytest.fixture
-def receiver(get_receiver) -> Union[ReceiverJava, ReceiverPython, ReceiverNodeJS]:
-    return get_receiver()
+def receiver(request, iqa) -> Union[ReceiverJava, ReceiverPython, ReceiverNodeJS]:
+    if "receiver_" in request.param:
+        rcv: str = request.param.split('_')
+        receiver_implementation = rcv[1]
+        receiver = iqa.get_clients(Receiver, receiver_implementation)[0]
+        return receiver
 
 
 @pytest.fixture
-def sender(get_sender) -> Union[SenderJava, SenderPython, SenderNodeJS]:
-    return get_sender()
+def sender(request, iqa) -> Union[SenderJava, SenderPython, SenderNodeJS]:
+    if "sender_" in request.param:
+        snd = request.param.split('_')
+        sender_implementation = snd[1]
+        sender = iqa.get_clients(Sender, sender_implementation)[0]
+        return sender
 
 
 @pytest.fixture
@@ -285,3 +307,4 @@ def broker_slave(request, iqa):
     if "Broker.S." in request.param:
         broker_hostname = request.param
         return iqa.get_brokers(broker_hostname)[0]
+
