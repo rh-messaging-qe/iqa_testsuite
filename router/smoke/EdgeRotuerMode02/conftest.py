@@ -58,6 +58,17 @@ def pytest_generate_tests(metafunc):
     ]
     address_translation_fixtures = ['address', 'translates_to', 'broker']
 
+    # Broker durable topics
+    broker_durable_topics = [
+        ('brokeri2.durable.topic', 'Broker.M.I2'),
+        ('brokere3.durable.topic', 'Broker.M.E3')
+    ]
+    # Broker non-durable topics
+    broker_nondurable_topics = [
+        ('brokeri2.nondurable.topic', 'Broker.M.I2'),
+        ('brokere3.nondurable.topic', 'Broker.M.E3')
+    ]
+
     if any([v for v in metafunc.fixturenames if v in ['sender', 'get_sender']]):
         metafunc.parametrize('sender', senders_comb, indirect=True)
 
@@ -89,6 +100,12 @@ def pytest_generate_tests(metafunc):
     address_translation_fixtures_count = len([f for f in address_translation_fixtures if f in metafunc.fixturenames])
     if address_translation_fixtures_count == len(address_translation_fixtures):
         metafunc.parametrize('address,translates_to,broker', address_translation_tuple)
+
+    if {'topic_durable', 'broker'}.issubset(metafunc.fixturenames):
+            metafunc.parametrize('topic_durable,broker', broker_durable_topics)
+
+    if {'topic_nondurable', 'broker'}.issubset(metafunc.fixturenames):
+        metafunc.parametrize('topic_nondurable,broker', broker_nondurable_topics)
 
 
 @pytest.fixture()
