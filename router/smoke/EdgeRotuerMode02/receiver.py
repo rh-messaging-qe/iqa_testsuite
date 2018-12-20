@@ -14,7 +14,8 @@ class Receiver(MessagingHandler, threading.Thread):
     """
     Receiver implementation of a Proton client that run as a thread.
     """
-    def __init__(self, url, message_count, timeout=0, container_id=None, durable=False):
+    def __init__(self, url, message_count, timeout=0, container_id=None, durable=False, save_messages=False,
+                 ignore_dups=False):
         super(Receiver, self).__init__()
         threading.Thread.__init__(self)
         self.url = url
@@ -22,12 +23,15 @@ class Receiver(MessagingHandler, threading.Thread):
         self.connection = None
         self.received = 0
         self.total = message_count
-        self.timeout = timeout
+        self.timeout_secs = timeout
         self.timeout_handler = None
         self.container_id = container_id
         self.container = None
         self.durable = durable
         self.last_received_id = {}
+        self.messages = []
+        self.save_messages = save_messages
+        self.ignore_dups = ignore_dups
         self._stopped = False
 
     def run(self):
@@ -36,12 +40,15 @@ class Receiver(MessagingHandler, threading.Thread):
         :return:
         """
         # If a timeout has been given, use it
-        if self.timeout > 0:
-            self.timeout_handler = TimeoutCallback(self.timeout, self.stop_receiver)
+        if self.timeout_secs > 0:
+            self.timeout_handler = TimeoutCallback(self.timeout_secs, self.stop_receiver)
 
         self.container = Container(self)
         self.container.container_id = self.container_id
         self.container.run()
+
+        # If receiver gets disconnected from remote peer, stop receiver
+        self.stop_receiver()
 
     def on_start(self, event):
         """
@@ -63,14 +70,19 @@ class Receiver(MessagingHandler, threading.Thread):
         """
 
         # Ignore received message from user id
-        if event.message.user_id and event.message.id and \
+        if self.ignore_dups and event.message.user_id and event.message.id and \
                 event.message.user_id in self.last_received_id and \
                 self.last_received_id[event.message.user_id] == event.message.id:
-            logging.debug('Ignoring duplicated message [id: %s]' % event.message.id)
+            logging.warning('Ignoring duplicated message [id: %s]' % event.message.id)
             return
 
+        logging.debug("%s - received message" % self.container_id)
         self.last_received_id[event.message.user_id] = event.message.id
         self.received += 1
+
+        # Saving received message for further validation
+        if self.save_messages:
+            self.messages.append(event.message.body)
 
         # Validate if receiver is done receiving
         if self.is_done_receiving():
@@ -84,16 +96,22 @@ class Receiver(MessagingHandler, threading.Thread):
         :param connection:
         :return:
         """
+        if self._stopped:
+            return
+
+        if self.timeout_handler:
+            self.timeout_handler.interrupt()
+
         self._stopped = True
         rec = receiver or self.receiver
         con = connection or self.connection
 
+        # When using durable subscription, detach first (or subscription will be removed)
         if self.durable:
             rec.detach()
-            self.container.stop()
-        else:
-            rec.close()
-            con.close()
+
+        rec.close()
+        con.close()
 
     def is_done_receiving(self):
         """
@@ -101,7 +119,7 @@ class Receiver(MessagingHandler, threading.Thread):
         positive amount of messages)
         :return:
         """
-        return self.total > 0 and (self.received == self.total)
+        return self.stopped or (self.total > 0 and (self.received == self.total))
 
     @property
     def stopped(self):
