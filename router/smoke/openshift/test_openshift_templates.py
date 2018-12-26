@@ -15,7 +15,7 @@ import logging
 # TODO Java sender is working very slowly (need to discuss with clients team)
 MESSAGE_COUNT = {'java': 10, 'python': 100, 'nodejs': 100}
 MESH_SIZE = 3
-
+TIMEOUT = 120
 
 def test_scale_up_router(router: Dispatch, logger):
     """
@@ -28,7 +28,7 @@ def test_scale_up_router(router: Dispatch, logger):
     :param router:
     :return:
     """
-    cmd_scale_up = Command(args=['oc', 'scale', '--replicas=%d' % MESH_SIZE, 'dc', 'amq-interconnect'], timeout=30,
+    cmd_scale_up = Command(args=['oc', 'scale', '--replicas=%d' % MESH_SIZE, 'dc', 'amq-interconnect'], timeout=TIMEOUT,
                            stderr=True, stdout=True)
     execution: Execution = router.execute(cmd_scale_up)
     execution.wait()
@@ -123,7 +123,7 @@ def test_scale_down_router(router: Dispatch, logger):
     :param router:
     :return:
     """
-    cmd_scale_up = Command(args=['oc', 'scale', '--replicas=1', 'dc', 'amq-interconnect'], timeout=30)
+    cmd_scale_up = Command(args=['oc', 'scale', '--replicas=1', 'dc', 'amq-interconnect'], timeout=TIMEOUT)
     execution: Execution = router.execute(cmd_scale_up)
     execution.wait()
 
@@ -151,7 +151,7 @@ def validate_mesh_size(router, new_size):
     :param new_size:
     :return:
     """
-    time.sleep(60)
+    time.sleep(90)
     query = RouterQuery(host=router.node.ip, port=router.port, router=router)
     node_list = query.node()
     assert node_list
@@ -190,6 +190,7 @@ def start_sender(sender, length):
     assert sender
 
     sender.command.control.count = MESSAGE_COUNT.get(sender.implementation)
+    sender.command.timeout = TIMEOUT
 
     # Starting the Sender
     message = Message(body="X" * length)
