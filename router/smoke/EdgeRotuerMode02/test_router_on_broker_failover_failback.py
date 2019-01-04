@@ -50,6 +50,9 @@ class TestRouterOnBrokerFailOverFailBack(object):
         # Ensure that a router instance has been provided
         assert isinstance(router, Dispatch)
 
+        # Wait for 30 seconds to router recovered from failover/failback
+        time.sleep(30)
+
         # Creates an instance of the RouterQuery class and retrieve autolinks and connectors
         query = TestRouterOnBrokerFailOverFailBack._get_router_query(router)
 
@@ -85,7 +88,7 @@ class TestRouterOnBrokerFailOverFailBack(object):
         query = TestRouterOnBrokerFailOverFailBack._get_router_query(router)
 
         # Ensure all autolinks are in "active" status
-        max_attempts = 30
+        max_attempts = 10
         attempt = 0
         all_autolinks_active = False
 
@@ -96,7 +99,7 @@ class TestRouterOnBrokerFailOverFailBack(object):
                     inactive += 1
             all_autolinks_active = inactive == 0
             attempt += 1
-            time.sleep(1)
+            time.sleep(10)
 
         assert all_autolinks_active
 
@@ -143,11 +146,11 @@ class TestRouterOnBrokerFailOverFailBack(object):
         :param broker:
         :return:
         """
-        max_attempts = 20
+        max_attempts = 10
         attempt = 0
 
         while not broker.queues() and attempt < max_attempts:
-            time.sleep(1)
+            time.sleep(10)
             attempt += 1
 
         assert len(broker.queues()) > 0
