@@ -336,5 +336,6 @@ class TestDurableNonDurableSubscription(object):
         self.validate_all_messages_sent(publishers)
 
         # Assert that all receivers did not receive any message and that all of them timed out
-        assert all([s.timeout_handler.timed_out() for s in subscribers]), "Expecting all receivers to timeout"
         assert all([s.received == 0 for s in subscribers]), "Expecting no message received"
+        assert all([s.timeout_handler.timed_out() for s in subscribers]), "Expecting all receivers to timeout"
+
