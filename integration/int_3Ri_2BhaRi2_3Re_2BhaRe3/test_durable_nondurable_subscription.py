@@ -3,8 +3,8 @@ import time
 
 from pytest_iqa.instance import IQAInstance
 
-from router.smoke.EdgeRotuerMode02.receiver import Receiver
-from router.smoke.EdgeRotuerMode02.sender import Sender
+from integration.int_3Ri_2BhaRi2_3Re_2BhaRe3.receiver import Receiver
+from integration.int_3Ri_2BhaRi2_3Re_2BhaRe3.sender import Sender
 
 """
 Test that validates Durable/Non-durable subscription using addresses that
