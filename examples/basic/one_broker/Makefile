@@ -25,9 +25,13 @@ run:
 run-container:
 	@echo "Executing artemis broker as a local container named 'broker1'"
 	@echo
-	@docker run -itd --name broker1 rhmessagingqe/artemis:2.6.3 2> /dev/null || true
+	@docker run -itd --name broker1 rhmessagingqe/artemis:2.6.3 2> /dev/null || docker start broker1
+	@echo Waiting for container to start...
+	@sleep 10
 
 docker: INVENTORY=inventory_docker.yml
 docker: run-container run
 	@echo
-	@echo "Note: This sample started a container named 'broker1'. Please stop it as needed."
+	@echo "Stopping broker1 container"
+	@docker stop broker1
+	@echo "Note: This sample created a container named 'broker1'. Please remove it as needed."

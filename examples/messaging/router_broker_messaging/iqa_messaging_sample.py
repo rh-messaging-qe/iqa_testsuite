@@ -1,10 +1,10 @@
 """
 Simple example that demonstrates how to use IQA components and tools
-to handle clients messaging through a router component.
+to handle clients messaging through a router or broker component.
 """
 import sys
 
-from messaging_abstract.component import Component, Sender
+from messaging_abstract.component import Component, Sender, Server
 from messaging_abstract.component import Receiver
 from messaging_abstract.component import Router
 from messaging_abstract.message import Message
@@ -18,7 +18,7 @@ inventory = sys.argv[1] if len(sys.argv) > 1 else 'inventory_local.yml'
 
 # Message explaining what this sample does
 intro_message = """
-This sample will first iterate through all components (router and clients)
+This sample will first iterate through all components (router/broker and clients)
 defined through the inventory file %s and then it will start:
 - One receiver instance of each client consuming messages from:
   /client/<implementation> (implementation being: java, python or nodejs)
@@ -45,15 +45,22 @@ for component in iqa.components:  # type: Component
     ))
 
 # Router instance to use on clients
-router1: Router = iqa.get_routers()[0]
+router_or_broker = None
+for component in iqa.components:
+    if isinstance(component, Server):
+        router_or_broker = component
+assert router_or_broker or 'No Router or Broker component defined in inventory file.'
 
 # Starting receivers
-print("\n-> Starting receiver components")
+print("\n-> Starting receiver against [%s]" % type(router_or_broker))
 for receiver in iqa.get_clients(Receiver):
-    receiver.set_url('amqp://%s:%s/client/%s' % (router1.node.get_ip(), router1.port, receiver.implementation))
+    receiver.set_url('amqp://%s:%s/client/%s' % (router_or_broker.node.get_ip(), '5672', receiver.implementation))
+    receiver.command.stdout = True
     receiver.command.timeout = TIMEOUT
     receiver.command.control.timeout = TIMEOUT
     receiver.command.control.count = MESSAGE_COUNT
+    receiver.command.logging.log_msgs = 'dict'
+    print("   -> starting %s receiver" % receiver.implementation)
     receiver.receive()
 
 
@@ -61,10 +68,11 @@ for receiver in iqa.get_clients(Receiver):
 print("-> Starting sender components")
 msg = Message(body="1234567890")
 for sender in iqa.get_clients(Sender):
-    sender.set_url('amqp://%s:%s/client/%s' % (router1.node.get_ip(), router1.port, sender.implementation))
+    sender.set_url('amqp://%s:%s/client/%s' % (router_or_broker.node.get_ip(), '5672', sender.implementation))
     sender.command.timeout = TIMEOUT
     sender.command.control.timeout = TIMEOUT
     sender.command.control.count = MESSAGE_COUNT
+    print("   -> starting %s sender" % sender.implementation)
     sender.send(msg)
 
 # Wait till all senders and receivers are done
@@ -81,9 +89,20 @@ for client in iqa.get_clients(Sender) + iqa.get_clients(Receiver):  # type: Clie
 
 # Verifying clients
 if not client_errors:
-    print("   => All clients completed successfully")
+    all_msgs_received = True
+    for receiver in iqa.get_clients(Receiver):
+        received_count = len(receiver.execution.read_stdout(lines=True))
+        if MESSAGE_COUNT != received_count:
+            all_msgs_received = False
+            print('   -> Receiver [%s] received %d out of %d expected messages'
+                  % (receiver.implementation, received_count, MESSAGE_COUNT))
+
+    if all_msgs_received:
+        print("   => All clients completed successfully")
+    else:
+        print("   => Some clients did not receive all expected messages")
 else:
     print("   => The following clients did not complete successfully:")
-    for client in client_errors:
+    for client in client_errors:  # Type: ClientExternal
         client_type = 'receiver' if isinstance(client, Receiver) else 'sender'
         print('      - %s [%s]' % (client_type, client.implementation))

@@ -2,7 +2,7 @@ VENV_DIR=../../venv
 REQUIREMENTS=../../../requirements.txt
 SAMPLE=iqa_one_router_sample.py
 
-all: local
+all: docker
 .PHONY: clean venv local ssh docker
 
 clean:
@@ -25,7 +25,7 @@ run:
 run-container:
 	@echo "Executing dispatch router as a local container named 'router1'"
 	@echo
-	@docker run -itd --name router1 rhmessagingqe/qpid-dispatch:ubuntu1804 2> /dev/null || true
+	@docker run -itd --name router1 rhmessagingqe/qpid-dispatch:ubuntu1804 2> /dev/null || docker start router1
 
 local: INVENTORY=inventory_local.yml
 local: run
@@ -36,4 +36,6 @@ ssh: run
 docker: INVENTORY=inventory_docker.yml
 docker: run-container run
 	@echo
-	@echo "Note: This sample started a container named 'router1'. Please stop it as needed."
+	@echo "Stopping router1 container"
+	@docker stop router1 || true
+	@echo "Note: This sample created a container named 'router1'. Please remove it as needed."

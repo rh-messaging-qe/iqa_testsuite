@@ -17,7 +17,7 @@ def query_connections(router: Router):
     :return:
     """
     print("  -> List of connections on %s:" % router.node.hostname)
-    query = RouterQuery(router=router)
+    query = RouterQuery(host=router.node.get_ip())
 
     # The query below returns a namedtuple representing a Connection entity
     for conn in query.connection():
