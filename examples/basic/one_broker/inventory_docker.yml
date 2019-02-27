@@ -6,7 +6,7 @@
 # - component (determines a component that can be parsed by iqa [router, broker, client])
 # - implementation (for broker, we currently just have: artemis)
 #
-# Router component required variables:
+# Broker component required variables:
 # - broker_name
 # - broker_web_port
 # - broker_path

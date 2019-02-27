@@ -33,5 +33,5 @@ docker: INVENTORY=inventory_docker.yml
 docker: run-container run
 	@echo
 	@echo "Stopping broker1 container"
-	@docker stop broker1
+	@docker stop broker1 || true
 	@echo "Note: This sample created a container named 'broker1'. Please remove it as needed."
