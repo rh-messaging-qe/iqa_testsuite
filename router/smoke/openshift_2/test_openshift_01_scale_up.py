@@ -48,7 +48,7 @@ def validate_mesh_size(router: Dispatch, new_size: int):
     :param new_size:
     :return:
     """
-    time.sleep(60)
+    time.sleep(90)
     query = RouterQuery(host=router.node.ip, port=router.port, router=router)
     node_list = query.node()
     assert len(node_list) == new_size
