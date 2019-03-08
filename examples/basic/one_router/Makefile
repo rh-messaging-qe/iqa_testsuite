@@ -12,7 +12,7 @@ clean:
 	
 venv: clean
 	@echo "Creating virtual env: $(VENV_DIR)"
-	virtualenv -p python3.6 $(VENV_DIR)
+	virtualenv -p python3 $(VENV_DIR)
 	. $(VENV_DIR)/bin/activate && pip install -r $(REQUIREMENTS)
 	
 run:
