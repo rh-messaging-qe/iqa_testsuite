@@ -4,7 +4,7 @@
 
 Project *iQA-testsuite* include separate test suites for Messaging.
 
-### Ideas
+## Ideas
 
 0) It is primarily designed for testing messaging services.
 
@@ -46,9 +46,10 @@ iQA-testsuite depends on following projects:
 - messaging_components
 - iqa_common
    
-#### (messaging_abstract) Messaging Abstraction aka. AMOM (Abstraction Messaging Of Middleware)
+#### (messaging_abstract) Abstraction of Middleware Messaging
 
-- Abstract classes
+Abstract classes (Facades)
+
 - Protocols
 - Message
 - Client 
@@ -64,13 +65,13 @@ iQA-testsuite depends on following projects:
 Implementation of specific components based on `messaging_abstract`.
 
 - Supported Brokers 
-  - Artemis
-  - QPID
+    - Artemis
+    - QPID
 - Supported Routers
-  - Qpid Dispatch
+    - Qpid Dispatch
 - Supported Clients
-  - Python proton
-  - Command line interface clients (RHEA, Python Proton, JMS)
+    - Python proton
+    - Command line interface clients (RHEA, Python Proton, JMS)
 
 #### (iqa_common)
 
@@ -78,8 +79,8 @@ Common classes methods for this test suite
 
 - IQA Instance
 - Node
-  - Execution
-  - 
+    - Execution
+
 #### IQA Instance
 
 `IQA Instance` knows facts about provided topology (based on inventory file). 
@@ -88,7 +89,9 @@ or access identified messaging components directly via provided APIs.
 The instance should verify compatibility with your inventory file by `test suite requirements`.
 
 ## Running test suites
-#### Prepare:
+
+### Prepare:
+
 ```bash
 # Create virtual environment
 virtualenv3 venv
@@ -99,7 +102,9 @@ source venv/bin/activate
 # Install requirements
 pip install -r requirements.txt
 ```
-#### Temporary dependency installation
+
+### Temporary dependency installation
+
 ```bash
 mkdir dependency
 git clone https://github.com/rh-messaging-qe/messaging_abstract.git
@@ -111,23 +116,20 @@ cd messaging_components;  python setup.py install; cd ..
 cd iqa_common;            python setup.py install; cd ..
 ```
 
-#### Options
-##### Inventory
+### Options
+
+#### Inventory
+
 Path to Inventory file with hosts and facts.
 
 ```bash
 --inventory ${path_to_inventory}
 ```
 
-#### Execution:
+#### Execution
+
 Need to be executed from main `conftest.py` test-suite root directory.
 
 ```bash
 ./venv/bin/py.test ${test_suite_dir} --inventory /path/to/inventory
 ```
-
-# TODO
-- Inventory
-- IQA Instance
-- xtlog
-    - pytest way -> implement pytest-logging/pytest-logger
