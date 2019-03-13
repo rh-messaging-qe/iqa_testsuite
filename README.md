@@ -103,19 +103,6 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### Temporary dependency installation
-
-```bash
-mkdir dependency
-git clone https://github.com/rh-messaging-qe/messaging_abstract.git
-git clone https://github.com/rh-messaging-qe/messaging_components.git
-git clone https://github.com/rh-messaging-qe/iqa_common.git
-
-cd messaging_abstract;    python setup.py install; cd ..
-cd messaging_components;  python setup.py install; cd ..
-cd iqa_common;            python setup.py install; cd ..
-```
-
 ### Options
 
 #### Inventory
