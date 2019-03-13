@@ -2,32 +2,34 @@
 
 ## Description
 
-Project iQA-testsuite include separate test suites for Messaging.
+Project *iQA-testsuite* include separate test suites for Messaging.
 
 ### Ideas
 
-1) Every test suite should use messaging_abstration API for writing tests.
-It not depends on which exactly component you want to use under test.
+0) It is primarily designed for testing messaging services.
+
+1) Every test suite should use `messaging_abstration` API for writing tests.
+It is not dependant on exact component you want to use under test.
 
 2) Components for test integration with end software.
-Under (messaging_components) setup under conftest.py (with iteration way?) 
+Under (`messaging_components`) setup under conftest.py (with iteration way?)
 Or under not yet existing plugin for py.test
 
-3) Test suites is based on py.test tests runner but can be used any framework.
+3) Test suites are by default based on [pytest](https://docs.pytest.org/en/latest/) tests runner,
+ but any test framework can be used instead.
 
-4) Also get possibility for exactly end testing without messaging_abstraction API.
+4) Possibility for end to end testing without messaging_abstraction API.
 
-Please read readme and install requirements.txt before running
+Please read `README.md` and `requirements.txt` before running.
 
 ## Needed steps
 
-1. Prepare/Deploy required topology (compatible with test suite)
-2. Describe the topology Inventory file (we chose compatibility with Ansible Inventory)
-3. Related to test runner (Write conftest.py where is also needed describe parts from Ansible Inventory)
-    - Fixture for broker, client, router
-4. Write tests (with messgaging-abstraction call)
-
-It's designed for testing messaging services.
+1. Prepare/Deploy required topology (must be compatible with expected test suite)
+2. Describe the topology in `inventory` file (fully compatible with Ansible Inventory)
+3. Related to test runner execution
+    - Provide `conftest.py` in which you describe (messaging) components from Inventory file
+    - Fixtures for *broker*, *client* and *router* objects
+4. Write tests using calls from `messaging-abstraction` module
 
 ## Objectives
 
@@ -35,14 +37,16 @@ It's designed for testing messaging services.
 - Scalable
 - Abstract
 
-## Dependency and projects
+## Dependencies and projects
 
-Every test suite can have different dependency.
-Read README.md for every test-suite
+Every test suite can have different dependency. Read `README.md` of every test-suite.
 
-On these projects iqa-testsuite depends:
+iQA-testsuite depends on following projects:
+- messaging_abstract
+- messaging_components
+- iqa_common
    
-### (messaging_abstract) Messaging Abstraction aka. AMOM (Abstraction Messaging Of Middleware)
+#### (messaging_abstract) Messaging Abstraction aka. AMOM (Abstraction Messaging Of Middleware)
 
 - Abstract classes
 - Protocols
@@ -55,26 +59,20 @@ On these projects iqa-testsuite depends:
 - Router
 - Node
 
-### (messaging_components) Messaging Components
+#### (messaging_components) Messaging Components
 
-It's based on messaging_abstract.
+Implementation of specific components based on `messaging_abstract`.
 
-#### Brokers 
+- Supported Brokers 
+  - Artemis
+  - QPID
+- Supported Routers
+  - Qpid Dispatch
+- Supported Clients
+  - Python proton
+  - Command line interface clients (RHEA, Python Proton, JMS)
 
-- Artemis
-- QPID
-
-#### Routers
-
-- Qpid Dispatch
- 
-
-#### Clients
-
-- Python proton
-- CLI (RHEA, Python Proton, JMS)
-
-### (iqa_common)
+#### (iqa_common)
 
 Common classes methods for this test suite
 
@@ -84,11 +82,13 @@ Common classes methods for this test suite
   - 
 #### IQA Instance
 
-Instance know facts about topology. Thought instance is possible go to node in topology or direct access to components.
-The instance should verify compatibility your inventory with test suite requirements.
+`IQA Instance` knows facts about provided topology (based on inventory file). 
+Such `instance` is able to execute commands directly on a specific node in topology
+or access identified messaging components directly via provided APIs.
+The instance should verify compatibility with your inventory file by `test suite requirements`.
 
 ## Running test suites
-### Prepare:
+#### Prepare:
 ```bash
 # Create virtual environment
 virtualenv3 venv
@@ -99,7 +99,7 @@ source venv/bin/activate
 # Install requirements
 pip install -r requirements.txt
 ```
-### Temporary dependency installation
+#### Temporary dependency installation
 ```bash
 mkdir dependency
 git clone https://github.com/rh-messaging-qe/messaging_abstract.git
@@ -111,21 +111,19 @@ cd messaging_components;  python setup.py install; cd ..
 cd iqa_common;            python setup.py install; cd ..
 ```
 
-### Options
-#### Inventory
-Path to Inventory with hosts and facts.
-IQA Inventory is compatible with Ansible Inventory.
+#### Options
+##### Inventory
+Path to Inventory file with hosts and facts.
 
 ```bash
 --inventory ${path_to_inventory}
 ```
 
-### Run:
-Need to run from main conftest.py test-suite root dir.
+#### Execution:
+Need to be executed from main `conftest.py` test-suite root directory.
 
 ```bash
-./venv/bin/py.test ${test_suite_dir} \
---inventory /path/to/inventory
+./venv/bin/py.test ${test_suite_dir} --inventory /path/to/inventory
 ```
 
 # TODO
