@@ -2,21 +2,21 @@
 
 ## Description
 
-Project *iQA-testsuite* include separate test suites for Messaging.
+Project *iqa-testsuite* include separate test suites for Messaging.
 
 ## Ideas
 
-0) It is primarily designed for testing messaging services.
+0) It is primarily designed for testing messaging components/services.
 
 1) Every test suite should use `messaging_abstration` API for writing tests.
-It is not dependant on exact component you want to use under test.
+   It is not dependant on exact component you want to use under test.
 
 2) Components for test integration with end software.
-Under (`messaging_components`) setup under conftest.py (with iteration way?)
-Or under not yet existing plugin for py.test
+   Under (`messaging_components`) setup under conftest.py (with iteration way?)
+   Or under not yet existing plugin for py.test
 
-3) Test suites are by default based on [pytest](https://docs.pytest.org/en/latest/) tests runner,
- but any test framework can be used instead.
+3) Test suites are by default based on [pytest](https://docs.pytest.org/en/latest/) tests runner, 
+   but any test framework can be used instead.
 
 4) Possibility for end to end testing without messaging_abstraction API.
 
@@ -41,12 +41,14 @@ Please read `README.md` and `requirements.txt` before running.
 
 Every test suite can have different dependency. Read `README.md` of every test-suite.
 
-iQA-testsuite depends on following projects:
+iqa_testsuite depends on following projects:
+
 - messaging_abstract
 - messaging_components
 - iqa_common
+- pytest_iqa
    
-#### (messaging_abstract) Abstraction of Middleware Messaging
+#### [(messaging_abstract) Abstraction of Middleware Messaging](https://github.com/rh-messaging-qe/messaging_components) 
 
 Abstract classes (Facades)
 
@@ -60,7 +62,7 @@ Abstract classes (Facades)
 - Router
 - Node
 
-#### (messaging_components) Messaging Components
+#### [(messaging_components) Messaging Components](https://github.com/rh-messaging-qe/messaging_components) 
 
 Implementation of specific components based on `messaging_abstract`.
 
@@ -72,7 +74,7 @@ Implementation of specific components based on `messaging_abstract`.
     - Python proton
     - Command line interface clients (RHEA, Python Proton, JMS)
 
-#### (iqa_common)
+#### [(iqa_common) IQA Common](https://github.com/rh-messaging-qe/iqa_common) 
 
 Common classes methods for this test suite
 
@@ -81,6 +83,8 @@ Common classes methods for this test suite
     - Execution
 
 #### IQA Instance
+
+Is provided as a pytest plugin [pytest_iqa](https://github.com/rh-messaging-qe/pytest_iqa) 
 
 `IQA Instance` knows facts about provided topology (based on inventory file). 
 Such `instance` is able to execute commands directly on a specific node in topology
