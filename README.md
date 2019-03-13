@@ -66,7 +66,6 @@ Implementation of specific components based on `messaging_abstract`.
 
 - Supported Brokers 
     - Artemis
-    - QPID
 - Supported Routers
     - Qpid Dispatch
 - Supported Clients
