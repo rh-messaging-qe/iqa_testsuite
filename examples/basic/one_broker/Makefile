@@ -25,7 +25,7 @@ run:
 run-container:
 	@echo "Executing artemis broker as a local container named 'broker1'"
 	@echo
-	@docker run -itd --name broker1 rhmessagingqe/artemis:2.6.3 2> /dev/null || docker start broker1
+	@docker run -itd --name broker1 rhmessagingqe/artemis:latest 2> /dev/null || docker start broker1
 	@echo Waiting for container to start...
 	@sleep 10
 
