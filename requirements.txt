@@ -6,6 +6,7 @@ optconstruct
 pytest
 docker
 ansible
+kubernetes
 mock
 reformat
 autologging
