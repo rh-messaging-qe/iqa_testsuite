@@ -251,21 +251,19 @@ def validate_client_results(receiver, sender):
 
     # Debugging receiver results
     if not receiver.execution.completed_successfully():
-        logger.debug("Receiver did not complete successfully [exit code = %d]"
-                     % receiver.execution.returncode)
+        logger.debug("Receiver did not complete successfully")
         logger.debug("Receiver stdout = %s" % receiver.execution.read_stdout())
         logger.debug("Receiver stderr = %s" % receiver.execution.read_stderr())
 
     # Debugging sender results
     if not sender.execution.completed_successfully():
-        logger.debug("Sender did not complete successfully [exit code = %d]"
-                     % sender.execution.returncode)
+        logger.debug("Sender did not complete successfully")
         logger.debug("Sender stdout = %s" % sender.execution.read_stdout())
         logger.debug("Sender stderr = %s" % sender.execution.read_stderr())
 
     # Validating receiver results
     assert not receiver.execution.is_running()
-    assert receiver.execution.returncode == 0, \
+    assert receiver.execution.completed_successfully(), \
         '%s did not complete successfully' % receiver.implementation.upper()
 
     # Each message received will be printed as one line (plus some extra lines from Ansible)
@@ -273,5 +271,5 @@ def validate_client_results(receiver, sender):
 
     # Validating if sender process completed without timing out
     assert not sender.execution.is_running()
-    assert sender.execution.returncode == 0, \
+    assert sender.execution.completed_successfully(), \
         '%s did not complete successfully' % sender.implementation.upper()
