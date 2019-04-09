@@ -106,8 +106,8 @@ class TestAddressTranslation(object):
         sender.execution.wait()
 
         # Validating sender completed successfully
-        logging.debug("Sender exit code: %s - timed out: %s" %
-                      (sender.execution.returncode,
+        logging.debug("Sender completed successfully: %s - timed out: %s" %
+                      (sender.execution.completed_successfully(),
                        sender.execution.timed_out))
         assert sender.execution.completed_successfully()
 
@@ -173,8 +173,8 @@ class TestAddressTranslation(object):
         receiver.execution.wait()
 
         # Validating results
-        logging.info("Receiver exit code: %s - timed out: %s" %
-                     (receiver.execution.returncode,
+        logging.info("Receiver completed successfully: %s - timed out: %s" %
+                     (receiver.execution.completed_successfully(),
                       receiver.execution.timed_out))
         assert receiver.execution.completed_successfully()
 
