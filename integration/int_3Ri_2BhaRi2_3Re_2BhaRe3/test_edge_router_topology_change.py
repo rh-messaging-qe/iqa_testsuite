@@ -1,6 +1,6 @@
 import logging
 
-from messaging_abstract.component import ServiceStatus
+from iqa.components.abstract.component import ServiceStatus
 from messaging_components.routers.dispatch.management import RouterQuery
 
 

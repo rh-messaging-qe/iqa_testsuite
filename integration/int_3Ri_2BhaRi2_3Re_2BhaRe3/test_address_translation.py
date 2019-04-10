@@ -14,9 +14,10 @@ import ast
 import time
 
 import pytest
-from messaging_abstract.message import Message
-from messaging_components.brokers import Artemis
-from pytest_iqa.instance import IQAInstance
+
+from iqa.components.brokers import Artemis
+from iqa.core.instance import IQAInstance
+from iqa.messaging.abstract.message import Message
 
 
 class TestAddressTranslation(object):

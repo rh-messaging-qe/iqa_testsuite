@@ -4,10 +4,10 @@ to handle clients abstract through a router or broker component.
 """
 import sys
 
-from messaging_abstract.component import Component, Sender, Server
-from messaging_abstract.component import Receiver
-from messaging_abstract.component import Router
-from messaging_abstract.message import Message
+from iqa.components.abstract.component import Component, Sender, Server
+from iqa.components.abstract.component import Receiver
+from iqa.components.abstract.component import Router
+from iqa.messaging_abstract.message import Message
 from messaging_components.clients import ClientExternal, ReceiverJava
 from pytest_iqa.instance import IQAInstance
 

@@ -1,4 +1,4 @@
-from messaging_abstract.client import Receiver
+from iqa.messaging_abstract.client import Receiver
 
 
 def test_isinstance(receiver: Receiver):

@@ -8,7 +8,7 @@ from messaging_components.clients import \
     ReceiverNodeJS, SenderNodeJS
 from messaging_components.routers.dispatch.dispatch import Dispatch
 
-from messaging_abstract.component import Receiver, Sender
+from iqa.components.abstract.component import Receiver, Sender
 
 clients = [
     "java",

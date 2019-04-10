@@ -1,4 +1,4 @@
-from messaging_abstract.client import Sender
+from iqa.messaging_abstract.client import Sender
 from odict import odict
 
 

@@ -20,7 +20,7 @@ before_install:
   - sudo apt-get -y install docker-ce git
 
   # Related repositories
-  - git clone https://github.com/rh-messaging-qe/messaging_abstract.git
+  - git clone https://github.com/rh-messaging-qe/iqa.messaging_abstract.git
   - git clone https://github.com/rh-messaging-qe/messaging_components.git
   - git clone https://github.com/rh-messaging-qe/iqa_common.git
   - git clone https://github.com/rh-messaging-qe/iqa_topologies.git

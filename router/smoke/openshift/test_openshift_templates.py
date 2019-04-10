@@ -1,6 +1,6 @@
 from iqa_common.executor import Command, Execution
-from messaging_abstract.component import Receiver, Sender
-from messaging_abstract.message import Message
+from iqa.components.abstract.component import Receiver, Sender
+from iqa.messaging_abstract.message import Message
 from messaging_components.clients import ReceiverJava, SenderJava, ReceiverPython, SenderPython, ReceiverNodeJS, \
     SenderNodeJS
 

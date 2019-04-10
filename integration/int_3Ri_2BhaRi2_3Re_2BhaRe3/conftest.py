@@ -2,7 +2,7 @@ from typing import Union
 
 import pytest
 
-from messaging_abstract.component import Receiver, Sender, Broker
+from iqa.components.abstract.component import Receiver, Sender, Broker
 from messaging_components.clients import \
     ReceiverJava, SenderJava, \
     ReceiverPython, SenderPython, \

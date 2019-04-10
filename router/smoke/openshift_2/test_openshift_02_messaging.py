@@ -1,5 +1,5 @@
 # Initial static configuration
-from messaging_abstract.message import Message
+from iqa.messaging_abstract.message import Message
 from messaging_components.clients import \
     ReceiverJava, SenderJava, \
     ReceiverPython, SenderPython, \

@@ -4,8 +4,8 @@ from proton import Message, Event
 from proton.handlers import MessagingHandler
 from proton.reactor import Container
 import time
-from messaging_components.brokers.artemis import Artemis
-from messaging_components.
+
+from iqa.components.brokers import Artemis
 
 
 class SendMessage(MessagingHandler):

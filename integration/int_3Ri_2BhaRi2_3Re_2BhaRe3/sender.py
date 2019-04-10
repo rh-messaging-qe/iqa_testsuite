@@ -7,10 +7,11 @@ import uuid
 import logging
 import math
 
-from iqa_common.utils.timeout import TimeoutCallback
 from proton import Message
 from proton._handlers import MessagingHandler
 from proton._reactor import Container, AtLeastOnce
+
+from iqa.utils.timeout import TimeoutCallback
 
 
 class Sender(MessagingHandler, threading.Thread):

@@ -5,9 +5,10 @@ for testing Edge Router topology.
 import threading
 import logging
 
-from iqa_common.utils.timeout import TimeoutCallback
 from proton.handlers import MessagingHandler
 from proton.reactor import Container, DurableSubscription
+
+from iqa.utils.timeout import TimeoutCallback
 
 
 class Receiver(MessagingHandler, threading.Thread):
