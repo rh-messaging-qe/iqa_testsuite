@@ -5,13 +5,13 @@ to handle a Broker component.
 import sys
 import logging
 
-from messaging_abstract.component import Broker
-from messaging_abstract.component import ServiceStatus
-from messaging_components.virtual import AbstractBrokerCluster
-from pytest_iqa.instance import IQAInstance
 
 
 # Displaying all queues
+from iqa.broker.abstract_broker_cluster import AbstractBrokerCluster
+from iqa.core.instance import IQAInstance
+from iqa.system.service.service import ServiceStatus
+
 DELAY = 10
 MAX_ATTEMPTS = 3
 

@@ -2,14 +2,18 @@
 Simple example that demonstrates how to use IQA abstract and tools
 to handle a Router component.
 """
-from messaging_abstract.component import ServiceStatus, Router
-from messaging_components.routers.dispatch.management import RouterQuery
-from pytest_iqa.instance import IQAInstance
 import sys
 
 
 # Displaying all connections
-def query_connections(router: Router):
+from iqa.components.routers import Dispatch
+from iqa.components.routers.dispatch.management import RouterQuery
+from iqa.core.instance import IQAInstance
+from iqa.messaging.abstract.server.router import Router
+from iqa.system.service.service import ServiceStatus
+
+
+def query_connections(router: Dispatch):
     """
     Queries management API using given Router instance
     for existing connections.
