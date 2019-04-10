@@ -1,6 +1,6 @@
 """
-Simple example that demonstrates how to use IQA components and tools
-to handle clients messaging through a router or broker component.
+Simple example that demonstrates how to use IQA abstract and tools
+to handle clients abstract through a router or broker component.
 """
 import sys
 
@@ -18,7 +18,7 @@ inventory = sys.argv[1] if len(sys.argv) > 1 else 'inventory_local.yml'
 
 # Message explaining what this sample does
 intro_message = """
-This sample will first iterate through all components (router/broker and clients)
+This sample will first iterate through all abstract (router/broker and clients)
 defined through the inventory file %s and then it will start:
 - One receiver instance of each client consuming messages from:
   /client/<implementation> (implementation being: java, python or nodejs)
@@ -34,7 +34,7 @@ print("Loading IQAInstance using inventory file: %s" % inventory)
 iqa = IQAInstance(inventory)
 
 # Listing all routers in inventory
-print("\n-> List of messaging components parsed from inventory")
+print("\n-> List of abstract abstract parsed from inventory")
 for component in iqa.components:  # type: Component
 
     # List component name and type
@@ -65,7 +65,7 @@ for receiver in iqa.get_clients(Receiver):
 
 
 # Starting senders
-print("-> Starting sender components")
+print("-> Starting sender abstract")
 msg = Message(body="1234567890")
 for sender in iqa.get_clients(Sender):
     sender.set_url('amqp://%s:%s/client/%s' % (router_or_broker.node.get_ip(), '5672', sender.implementation))

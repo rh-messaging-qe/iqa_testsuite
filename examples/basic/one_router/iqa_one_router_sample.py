@@ -1,5 +1,5 @@
 """
-Simple example that demonstrates how to use IQA components and tools
+Simple example that demonstrates how to use IQA abstract and tools
 to handle a Router component.
 """
 from messaging_abstract.component import ServiceStatus, Router
@@ -29,7 +29,7 @@ inventory = sys.argv[1] if len(sys.argv) > 1 else 'inventory_local.yml'
 
 # Message explaining what this sample does
 intro_message = """
-This sample will iterate through all the 'router' components defined at
+This sample will iterate through all the 'router' abstract defined at
 the '%s' inventory file and it will then:
 - Display the router node hostname and its current status (if able to 
   communicate with it)
@@ -46,7 +46,7 @@ print("Loading IQAInstance using inventory file: %s" % inventory)
 iqa = IQAInstance(inventory)
 
 # Listing all routers in inventory
-print("\nList of Router components parsed from inventory")
+print("\nList of Router abstract parsed from inventory")
 for router in iqa.routers:  # type: Router
 
     # List router node hostname and its status

@@ -1,5 +1,5 @@
 """
-Simple example that demonstrates how to use IQA components and tools
+Simple example that demonstrates how to use IQA abstract and tools
 to handle a Broker component.
 """
 import sys
@@ -32,7 +32,7 @@ inventory = sys.argv[1] if len(sys.argv) > 1 else 'inventory_docker.yml'
 
 # Message explaining what this sample does
 intro_message = """
-This sample will iterate through all the 'broker' components defined at
+This sample will iterate through all the 'broker' abstract defined at
 the '%s' inventory file and it will then:
 - Display the broker node hostname and its current status (if able to 
   communicate with it)
