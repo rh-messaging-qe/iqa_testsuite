@@ -12,3 +12,5 @@ reformat
 autologging
 odict
 python-qpid-proton
+amqcfg
+dpath
