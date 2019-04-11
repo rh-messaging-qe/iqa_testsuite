@@ -92,6 +92,7 @@ class TestAddressTranslation(object):
         # Preparing the external sender
         logging.info("Sending messages to %s - using %s" % (url, sender.implementation))
         sender.reset_command()
+        sender.command.stderr = True
         sender.set_url(url)
         sender.command.control.count = self.SEND_COUNT
         sender.command.control.timeout = self.TIMEOUT  # Timeout flag for command to be executed
@@ -109,6 +110,12 @@ class TestAddressTranslation(object):
         logging.debug("Sender completed successfully: %s - timed out: %s" %
                       (sender.execution.completed_successfully(),
                        sender.execution.timed_out))
+
+        # Debug output in case of failure
+        if not sender.execution.completed_successfully():
+            logging.debug("Sender stdout = %s" % sender.execution.read_stdout())
+            logging.debug("Sender stderr = %s" % sender.execution.read_stderr())
+
         assert sender.execution.completed_successfully()
 
         # Delaying 5 secs to clean up everything
@@ -160,6 +167,7 @@ class TestAddressTranslation(object):
         # Preparing receiver
         logging.info("Receiving messages from %s - using %s" % (url, receiver.implementation))
         receiver.reset_command()
+        receiver.command.stderr = True
         receiver.set_url(url)
         receiver.command.control.count = self.RECV_COUNT
         # cannot be used with cli-rhea as it is "waiting" for the given amount of time (causing a timeout to happen)
@@ -176,6 +184,12 @@ class TestAddressTranslation(object):
         logging.info("Receiver completed successfully: %s - timed out: %s" %
                      (receiver.execution.completed_successfully(),
                       receiver.execution.timed_out))
+
+        # Debug output in case of failure
+        if not receiver.execution.completed_successfully():
+            logging.debug("Receiver stdout = %s" % receiver.execution.read_stdout())
+            logging.debug("Receiver stderr = %s" % receiver.execution.read_stderr())
+
         assert receiver.execution.completed_successfully()
 
         # Validating message integrity
