@@ -13,7 +13,7 @@ import logging
 
 
 # TODO Java sender is working very slowly (need to discuss with clients team)
-WAIT_ROUTER_MESH_SECS = 90
+WAIT_ROUTER_MESH_SECS = 120
 MESH_SIZE = 3
 MESSAGE_COUNT = {'java': 10, 'python': 100, 'nodejs': 100}
 TIMEOUT = 120
