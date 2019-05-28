@@ -13,7 +13,8 @@ import logging
 
 
 # TODO Java sender is working very slowly (need to discuss with clients team)
-WAIT_ROUTER_MESH_SECS = 120
+ATTEMPTS = 5
+WAIT_ROUTER_MESH_SECS = 30
 MESH_SIZE = 3
 MESSAGE_COUNT = {'java': 10, 'python': 100, 'nodejs': 100}
 TIMEOUT = 120
@@ -154,14 +155,20 @@ def validate_mesh_size(router, new_size):
     :param new_size:
     :return:
     """
-    # Wait before querying nodes
-    logger.debug('Waiting %s seconds for router mesh to be formed' % WAIT_ROUTER_MESH_SECS)
-    time.sleep(WAIT_ROUTER_MESH_SECS)
+    for attempt in range(ATTEMPTS):
+        # Wait before querying nodes
+        logger.debug('Attempt %d/%d' % (attempt+1, ATTEMPTS))
+        logger.debug('Waiting %s seconds for router mesh to be formed' % WAIT_ROUTER_MESH_SECS)
+        time.sleep(WAIT_ROUTER_MESH_SECS)
+    
+        # Query nodes in topology
+        query = RouterQuery(host=router.node.ip, port=router.port, router=router)
+        node_list = query.node()
+        logging.debug("List of nodes: %s" % node_list)
 
-    # Query nodes in topology
-    query = RouterQuery(host=router.node.ip, port=router.port, router=router)
-    node_list = query.node()
-    logging.debug("List of nodes: %s" % node_list)
+        # If expected number of nodes found, break
+        if len(node_list) == new_size:
+            break
 
     # Assertions
     assert node_list
