@@ -7,13 +7,14 @@ from messaging_components.clients import ReceiverJava, SenderJava, ReceiverPytho
 # Initial static configuration
 from messaging_components.routers import Dispatch
 from messaging_components.routers.dispatch.management import RouterQuery
+from proton import ConnectionException
 from pytest_iqa.instance import IQAInstance
 import time
 import logging
 
 
 # TODO Java sender is working very slowly (need to discuss with clients team)
-ATTEMPTS = 5
+ATTEMPTS = 10
 WAIT_ROUTER_MESH_SECS = 30
 MESH_SIZE = 3
 MESSAGE_COUNT = {'java': 10, 'python': 100, 'nodejs': 100}
@@ -162,8 +163,13 @@ def validate_mesh_size(router, new_size):
         time.sleep(WAIT_ROUTER_MESH_SECS)
     
         # Query nodes in topology
-        query = RouterQuery(host=router.node.ip, port=router.port, router=router)
-        node_list = query.node()
+        try:
+            query = RouterQuery(host=router.node.ip, port=router.port, router=router)
+            node_list = query.node()
+        except ConnectionException as ex:
+            logging.error("Unable to connect with router: %s" % ex)
+            continue
+
         logging.debug("List of nodes: %s" % node_list)
 
         # If expected number of nodes found, break
