@@ -1,7 +1,7 @@
 all:
   vars:
     ansible_user: root
-    ansible_ssh_extra_args: '-o StrictHostKeyChecking=no'
+    ansible_ssh_extra_args: "-o StrictHostKeyChecking=no"
   children:
     routers:
       hosts:
@@ -13,8 +13,8 @@ all:
           router_config: /etc/qpid-dispatch/qdrouterd.conf
           implementation: dispatch
           service: qdrouterd
-          pem_file: client.crt
-          key_file: client-key.pem
+          pem_file: "client.crt"
+          key_file: "client-key.pem"
           key_password:
     clients:
       hosts:
@@ -31,8 +31,8 @@ all:
         ansible_connection: docker
         component: client
         executor: docker
-        pem_file: 'client.crt'
-        key_file: 'client-key.pem'
-        keystore: 'clientkeystore'
-        keystore_pass: 'redhat'
-        keystore_alias: 'client'
+        pem_file: "/client.crt"
+        key_file: "/client-key.pem"
+        keystore: "/clientkeystore"
+        keystore_pass: "redhat"
+        keystore_alias: "client"

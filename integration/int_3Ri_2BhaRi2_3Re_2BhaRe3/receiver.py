@@ -110,8 +110,10 @@ class Receiver(MessagingHandler, threading.Thread):
         if self.durable:
             rec.detach()
 
-        rec.close()
-        con.close()
+        if rec:
+            rec.close()
+        if con:
+            con.close()
 
     def is_done_receiving(self):
         """

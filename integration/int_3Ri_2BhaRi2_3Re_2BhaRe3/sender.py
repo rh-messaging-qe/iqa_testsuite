@@ -192,8 +192,10 @@ class Sender(MessagingHandler, threading.Thread):
         self._stopped = True
         sdr = sender or self.sender
         con = connection or self.connection
-        sdr.close()
-        con.close()
+        if sdr:
+            sdr.close()
+        if con:
+            con.close()
 
     @property
     def stopped(self):

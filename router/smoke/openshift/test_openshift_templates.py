@@ -7,17 +7,22 @@ from messaging_components.clients import ReceiverJava, SenderJava, ReceiverPytho
 # Initial static configuration
 from messaging_components.routers import Dispatch
 from messaging_components.routers.dispatch.management import RouterQuery
+from proton import ConnectionException
 from pytest_iqa.instance import IQAInstance
 import time
 import logging
 
 
 # TODO Java sender is working very slowly (need to discuss with clients team)
-MESSAGE_COUNT = {'java': 10, 'python': 100, 'nodejs': 100}
+ATTEMPTS = 10
+WAIT_ROUTER_MESH_SECS = 30
 MESH_SIZE = 3
+MESSAGE_COUNT = {'java': 10, 'python': 100, 'nodejs': 100}
 TIMEOUT = 120
+logger = logging.getLogger(__name__)
 
-def test_scale_up_router(router: Dispatch, logger):
+
+def test_scale_up_router(router: Dispatch):
     """
     Executes "oc" command to scale up the number of PODs according to value defined in MESH_SIZE constant.
     It also uses 'amq-interconnect' as the deployment config name (standard in official templates).
@@ -116,7 +121,7 @@ def test_basic_messaging_with_all_clients_concurrently(iqa: IQAInstance, length)
         validate_client_results(receiver, sender)
 
 
-def test_scale_down_router(router: Dispatch, logger):
+def test_scale_down_router(router: Dispatch):
     """
     Scale down the number of PODs to 1.
     Expects that the scale down command completes successfully.
@@ -151,9 +156,27 @@ def validate_mesh_size(router, new_size):
     :param new_size:
     :return:
     """
-    time.sleep(90)
-    query = RouterQuery(host=router.node.ip, port=router.port, router=router)
-    node_list = query.node()
+    for attempt in range(ATTEMPTS):
+        # Wait before querying nodes
+        logger.debug('Attempt %d/%d' % (attempt+1, ATTEMPTS))
+        logger.debug('Waiting %s seconds for router mesh to be formed' % WAIT_ROUTER_MESH_SECS)
+        time.sleep(WAIT_ROUTER_MESH_SECS)
+    
+        # Query nodes in topology
+        try:
+            query = RouterQuery(host=router.node.ip, port=router.port, router=router)
+            node_list = query.node()
+        except ConnectionException as ex:
+            logging.error("Unable to connect with router: %s" % ex)
+            continue
+
+        logging.debug("List of nodes: %s" % node_list)
+
+        # If expected number of nodes found, break
+        if len(node_list) == new_size:
+            break
+
+    # Assertions
     assert node_list
     assert len(node_list) == new_size
 
@@ -170,8 +193,14 @@ def start_receiver(receiver):
     # Defining number of messages to exchange
     receiver.command.control.count = MESSAGE_COUNT.get(receiver.implementation)
     receiver.command.logging.log_msgs = 'dict'
+    receiver.command.stdout = True
+    receiver.command.stderr = True
 
     # Starting the Receiver
+    logger.info("Starting receiver: [implementation=%s | message count=%s | timeout=%s" % (
+                receiver.implementation,
+                receiver.command.control.count,
+                receiver.command.control.timeout))
     receiver.receive()
 
 
@@ -191,9 +220,16 @@ def start_sender(sender, length):
 
     sender.command.control.count = MESSAGE_COUNT.get(sender.implementation)
     sender.command.timeout = TIMEOUT
+    sender.command.stdout = True
+    sender.command.stderr = True
 
     # Starting the Sender
     message = Message(body="X" * length)
+
+    logger.info("Starting sender: [implementation=%s | message count=%s | timeout=%s" % (
+                sender.implementation,
+                sender.command.control.count,
+                sender.command.control.timeout))
     sender.send(message)
 
 
@@ -222,15 +258,31 @@ def validate_client_results(receiver, sender):
     # Validating results
     #
     # Wait till both processes complete
+    logger.info('Waiting on receiver and sender to complete (or timeout)')
     while receiver.execution.is_running() or sender.execution.is_running():
         pass
 
-    # Validate that both processes completed with return code 0
+    # Debugging receiver results
+    if not receiver.execution.completed_successfully():
+        logger.debug("Receiver did not complete successfully")
+        logger.debug("Receiver stdout = %s" % receiver.execution.read_stdout())
+        logger.debug("Receiver stderr = %s" % receiver.execution.read_stderr())
+
+    # Debugging sender results
+    if not sender.execution.completed_successfully():
+        logger.debug("Sender did not complete successfully")
+        logger.debug("Sender stdout = %s" % sender.execution.read_stdout())
+        logger.debug("Sender stderr = %s" % sender.execution.read_stderr())
+
+    # Validating receiver results
     assert not receiver.execution.is_running()
-    assert receiver.execution.returncode == 0, \
+    assert receiver.execution.completed_successfully(), \
         '%s did not complete successfully' % receiver.implementation.upper()
-    assert not sender.execution.is_running()
-    assert sender.execution.returncode == 0
 
     # Each message received will be printed as one line (plus some extra lines from Ansible)
     assert len(receiver.execution.read_stdout(lines=True)) >= MESSAGE_COUNT.get(receiver.implementation)
+
+    # Validating if sender process completed without timing out
+    assert not sender.execution.is_running()
+    assert sender.execution.completed_successfully(), \
+        '%s did not complete successfully' % sender.implementation.upper()

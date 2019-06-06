@@ -6,8 +6,11 @@ optconstruct
 pytest
 docker
 ansible
+kubernetes
 mock
 reformat
 autologging
 odict
 python-qpid-proton
+amqcfg
+dpath
