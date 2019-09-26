@@ -22,8 +22,9 @@ class Sender(MessagingHandler, threading.Thread):
     lock = threading.Lock()
 
     def __init__(self, url, message_count, sender_id, message_size=1024, timeout=0,
-                 user_id=None, proton_option=AtLeastOnce(), use_unique_body=False):
-        super(Sender, self).__init__()
+                 user_id=None, proton_option=AtLeastOnce(), use_unique_body=False,
+                 auto_accept=True, auto_settle=True):
+        super(Sender, self).__init__(auto_accept=auto_accept, auto_settle=auto_settle)
         threading.Thread.__init__(self)
         self.url = url
         self.total = message_count
