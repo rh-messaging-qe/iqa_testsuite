@@ -94,6 +94,7 @@ class Sender(MessagingHandler, threading.Thread):
         Returns True if all expected messages have been sent or if sender has timed out.
         :return:
         """
+        #????
         return self.stopped or (self.total > 0 and (self.sent - self.released - self.rejected == self.total))
 
     def _generate_message_id_and_body(self) -> list:
@@ -143,7 +144,7 @@ class Sender(MessagingHandler, threading.Thread):
         """
         if event.delivery not in self.tracker:
             logging.debug('Ignoring confirmation for other deliveries - %s' % event.delivery.tag)
-        self.accepted += 1  #this should be named accepted
+        self.accepted += 1
         self.verify_sender_done(event)
 
     def on_modified(self, event):
