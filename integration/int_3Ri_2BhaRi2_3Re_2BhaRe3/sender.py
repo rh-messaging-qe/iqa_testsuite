@@ -32,9 +32,11 @@ class Sender(MessagingHandler, threading.Thread):
         self.sender = None
         self.connection = None
         self.sent = 0
-        self.confirmed = 0
+        self.accepted = 0
         self.released = 0
         self.rejected = 0
+        self.modified = 0
+        self.settled = 0
         self.container = None
         self.message_size = message_size
 
@@ -135,14 +137,21 @@ class Sender(MessagingHandler, threading.Thread):
 
     def on_accepted(self, event):
         """
-        Increases the confirmed count (if delivery not yet in tracker list).
+        Increases the accepted count (if delivery not yet in tracker list).
         :param event:
         :return:
         """
         if event.delivery not in self.tracker:
             logging.debug('Ignoring confirmation for other deliveries - %s' % event.delivery.tag)
-        self.confirmed += 1
+        self.accepted += 1  #this should be named accepted
         self.verify_sender_done(event)
+
+    def on_modified(self, event):
+        # XXX verify if this has sense, it seems to be never called.
+        self.modified += 1
+
+    def on_settled(self, event):
+        self.settled += 1
 
     def on_released(self, event):
         """
