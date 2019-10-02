@@ -102,7 +102,7 @@ class TestMulticast:
     MESSAGES_COUNT = 5
     MESSAGE_SIZE = 128
 
-    TIMEOUT = 4 #why?
+    TIMEOUT = 6 #why? # 4 fails randomly and it looks like 6 works always, investigate
     address = "multicast/bla"
 
     @staticmethod
