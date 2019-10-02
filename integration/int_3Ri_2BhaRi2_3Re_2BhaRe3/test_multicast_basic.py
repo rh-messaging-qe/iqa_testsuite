@@ -46,29 +46,21 @@ outcomes_config_list = [
      "expected": Expected.rejected,
      "test_id": "Expect rejected if any reject.",
     },
-    #two issues here:
-    #1) proton sender counts modified as released
-    #2) the "Expect accept if no rejects" (taken from system tests) fails but according to documentation...
-    #probably it should fail, from documentation:
-    #accepted means:
-    # - All consumers received the message,
-    # - Or, at least one consumer received the message, but no consumers rejected it.
-    #in this case no consumer is accepting ...
-    #{
-     #"recv_outcomes": [Outcome.modify, Outcome.release],
-     #"expected": Expected.accepted,
-     #"test_id": "Expect accept if no rejects=====",
-    #},
-    #{
-     #"recv_outcomes": 3*[Outcome.release] + [Outcome.modify],
-     #"expected": Expected.modified,
-     #"test_id": "Expect modified over released=====",
-    #},
-    #{
-     #"recv_outcomes": 2*[Outcome.modify],
-     #"expected": Expected.modified,
-     #"test_id": "Expected modify if all modify",
-    #},
+    {
+     "recv_outcomes": [Outcome.modify, Outcome.accept, Outcome.release],
+     "expected": Expected.accepted,
+     "test_id": "Expect accept if no rejects",
+    },
+    {
+     "recv_outcomes": 3*[Outcome.release] + [Outcome.modify],
+     "expected": Expected.modified,
+     "test_id": "Expect modified over released",
+    },
+    {
+     "recv_outcomes": 2*[Outcome.modify],
+     "expected": Expected.modified,
+     "test_id": "Expected modify if all modify",
+    },
     {
      "recv_outcomes": 6*[Outcome.release],
      "expected": Expected.released,
