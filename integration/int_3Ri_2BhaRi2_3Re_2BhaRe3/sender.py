@@ -8,7 +8,7 @@ import logging
 import math
 
 from iqa_common.utils.timeout import TimeoutCallback
-from proton import Message
+from proton import Message, Delivery
 from proton._handlers import MessagingHandler
 from proton._reactor import Container, AtLeastOnce
 
@@ -155,11 +155,11 @@ class Sender(MessagingHandler, threading.Thread):
         self.settled += 1
 
     def on_released(self, event):
-        """
-        Increases the released count
-        :param event:
-        :return:
-        """
+        # from qpid_dispatch system tests:
+        # for some reason Proton 'helpfully' calls on_released even though the
+        # delivery state is actually MODIFIED
+        if event.delivery.remote_state == Delivery.MODIFIED:
+            return self.on_modified(event)
         self.released += 1
         logging.debug('Message released - %s' % event.delivery.tag)
 
