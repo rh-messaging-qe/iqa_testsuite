@@ -8,7 +8,7 @@ import logging
 import math
 
 from iqa_common.utils.timeout import TimeoutCallback
-from proton import Message
+from proton import Message, Delivery
 from proton._handlers import MessagingHandler
 from proton._reactor import Container, AtLeastOnce
 
@@ -64,6 +64,14 @@ class Sender(MessagingHandler, threading.Thread):
         # Internal variable to control whether or not sender was stopped
         self._stopped = False
 
+    @property
+    def timed_out(self):
+        return self._timed_out
+
+    def timeout_stop_sender(self):
+        self._timed_out = True
+        self.stop_sender()
+
     def run(self):
         """
         Starts the thread and the Proton Container
@@ -71,7 +79,7 @@ class Sender(MessagingHandler, threading.Thread):
         """
         # If a timeout has been given, use it
         if self.timeout_secs > 0:
-            self.timeout_handler = TimeoutCallback(self.timeout_secs, self.stop_sender)
+            self.timeout_handler = TimeoutCallback(self.timeout_secs, self.timeout_stop_sender)
 
         self.container = Container(self)
         self.container.run()
