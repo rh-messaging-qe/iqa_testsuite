@@ -33,6 +33,11 @@ class Receiver(MessagingHandler, threading.Thread):
         self.save_messages = save_messages
         self.ignore_dups = ignore_dups
         self._stopped = False
+        self._timed_out = False
+
+    @property
+    def timed_out(self):
+        return self._timed_out
 
     def run(self):
         """
@@ -41,7 +46,7 @@ class Receiver(MessagingHandler, threading.Thread):
         """
         # If a timeout has been given, use it
         if self.timeout_secs > 0:
-            self.timeout_handler = TimeoutCallback(self.timeout_secs, self.stop_receiver)
+            self.timeout_handler = TimeoutCallback(self.timeout_secs, self.timeout_stop_receiver)
 
         self.container = Container(self)
         self.container.container_id = self.container_id
@@ -87,6 +92,10 @@ class Receiver(MessagingHandler, threading.Thread):
         # Validate if receiver is done receiving
         if self.is_done_receiving():
             self.stop_receiver(event.receiver, event.connection)
+
+    def timeout_stop_receiver(self):
+        self._timed_out = True
+        self.stop_receiver()
 
     def stop_receiver(self, receiver=None, connection=None):
         """
