@@ -15,8 +15,8 @@ class Receiver(MessagingHandler, threading.Thread):
     Receiver implementation of a Proton client that run as a thread.
     """
     def __init__(self, url, message_count, timeout=0, container_id=None, durable=False, save_messages=False,
-                 ignore_dups=False):
-        super(Receiver, self).__init__()
+                 ignore_dups=False, auto_accept=True, auto_settle=True):
+        super(Receiver, self).__init__(auto_accept=auto_accept, auto_settle=auto_settle)
         threading.Thread.__init__(self)
         self.url = url
         self.receiver = None

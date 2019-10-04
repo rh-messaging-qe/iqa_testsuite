@@ -8,7 +8,7 @@ import logging
 import math
 
 from iqa_common.utils.timeout import TimeoutCallback
-from proton import Message
+from proton import Message, Delivery
 from proton._handlers import MessagingHandler
 from proton._reactor import Container, AtLeastOnce
 
@@ -22,8 +22,9 @@ class Sender(MessagingHandler, threading.Thread):
     lock = threading.Lock()
 
     def __init__(self, url, message_count, sender_id, message_size=1024, timeout=0,
-                 user_id=None, proton_option=AtLeastOnce(), use_unique_body=False):
-        super(Sender, self).__init__()
+                 user_id=None, proton_option=AtLeastOnce(), use_unique_body=False,
+                 auto_accept=True, auto_settle=True):
+        super(Sender, self).__init__(auto_accept=auto_accept, auto_settle=auto_settle)
         threading.Thread.__init__(self)
         self.url = url
         self.total = message_count
@@ -31,9 +32,11 @@ class Sender(MessagingHandler, threading.Thread):
         self.sender = None
         self.connection = None
         self.sent = 0
-        self.confirmed = 0
+        self.accepted = 0
         self.released = 0
         self.rejected = 0
+        self.modified = 0
+        self.settled = 0
         self.container = None
         self.message_size = message_size
 
@@ -91,6 +94,7 @@ class Sender(MessagingHandler, threading.Thread):
         Returns True if all expected messages have been sent or if sender has timed out.
         :return:
         """
+        #????
         return self.stopped or (self.total > 0 and (self.sent - self.released - self.rejected == self.total))
 
     def _generate_message_id_and_body(self) -> list:
@@ -134,21 +138,28 @@ class Sender(MessagingHandler, threading.Thread):
 
     def on_accepted(self, event):
         """
-        Increases the confirmed count (if delivery not yet in tracker list).
+        Increases the accepted count (if delivery not yet in tracker list).
         :param event:
         :return:
         """
         if event.delivery not in self.tracker:
             logging.debug('Ignoring confirmation for other deliveries - %s' % event.delivery.tag)
-        self.confirmed += 1
+        self.accepted += 1
         self.verify_sender_done(event)
 
+    def on_modified(self, event):
+        # XXX verify if this has sense, it seems to be never called.
+        self.modified += 1
+
+    def on_settled(self, event):
+        self.settled += 1
+
     def on_released(self, event):
-        """
-        Increases the released count
-        :param event:
-        :return:
-        """
+        # from qpid_dispatch system tests:
+        # for some reason Proton 'helpfully' calls on_released even though the
+        # delivery state is actually MODIFIED
+        if event.delivery.remote_state == Delivery.MODIFIED:
+            return self.on_modified(event)
         self.released += 1
         logging.debug('Message released - %s' % event.delivery.tag)
 
