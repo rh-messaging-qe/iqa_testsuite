@@ -99,7 +99,7 @@ class TestMulticastStress:
                          ))
 
             #TODO check what to assert
-            assert s.accepted >= 0.5 * s.total
+            assert s.accepted >= s.total
             assert s.timed_out == False
             assert s.rejected == 0
 
@@ -117,7 +117,6 @@ class TestMulticastStress:
         def evaluate_receiver(r):
             _log_info_receiver(r)
 
-            #TODO check what else to assert
             assert r.timed_out == False, "%s timed out" % r.container_id
             assert r.received == r.total
 
@@ -126,9 +125,13 @@ class TestMulticastStress:
             _log_info_receiver(r)
             assert r.received >= self.SEND_MESSAGES_COUNT
 
-        def evaluate_result(receivers, sender):
-            for r in receivers:
+        def evaluate_result(no_timeout_receivers, timeout_receivers, sender):
+            for r in no_timeout_receivers:
                 evaluate_receiver(r)
+
+            for r in timeout_receivers:
+                evaluate_timeout_receiver(r)
+
             evaluate_sender(sender)
 
         def _wait_for_all_process_to_terminate(threads):
@@ -137,24 +140,24 @@ class TestMulticastStress:
 
         router_send = router_e1
 
-        #XXX this hardcoded values are related (minor) to self.SEND_MESSAGES_COUNT
-        good_recv_count_list = 5*[1000] + 5 * [2000] + 10 * [3500]
+        #receivers dropping when receiving an arbitrary number of messages
+        good_recv_count_list = 5*[int(0.9 * self.SEND_MESSAGES_COUNT)] + \
+                               5 * [int(0.7 * self.SEND_MESSAGES_COUNT)] + \
+                               10 * [int(0.3 * self.SEND_MESSAGES_COUNT)]
         broken_receivers_count_list = [1232, 123, 190]
 
         good_receivers = self.launch_receivers(good_recv_count_list, iqa)
         broken_receivers = self.launch_receivers(broken_receivers_count_list, iqa, HangReceiver)
         timeout_receivers = self.launch_receivers([self.SEND_MESSAGES_COUNT * 2], iqa)
 
-        normal_terminated_receivers = good_receivers + broken_receivers
+        no_timeout_receivers = good_receivers + broken_receivers
 
         sender = self._sender(router_send, self.address)
 
-        _wait_for_all_process_to_terminate(normal_terminated_receivers + timeout_receivers + [sender])
+        _wait_for_all_process_to_terminate(no_timeout_receivers + timeout_receivers + [sender])
 
-        evaluate_result(normal_terminated_receivers, sender)
+        evaluate_result(no_timeout_receivers, timeout_receivers, sender)
 
-        for r in timeout_receivers:
-            evaluate_timeout_receiver(r)
 
 
 
