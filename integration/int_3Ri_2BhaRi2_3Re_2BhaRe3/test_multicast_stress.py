@@ -144,7 +144,10 @@ class TestMulticastStress:
         good_recv_count_list = 5*[int(0.9 * self.SEND_MESSAGES_COUNT)] + \
                                5 * [int(0.7 * self.SEND_MESSAGES_COUNT)] + \
                                10 * [int(0.3 * self.SEND_MESSAGES_COUNT)]
-        broken_receivers_count_list = [1232, 123, 190]
+
+        broken_receivers_count_list = [int(0.05 * self.SEND_MESSAGES_COUNT),
+                                       int(0.2 * self.SEND_MESSAGES_COUNT),
+                                       int(0.15 * self.SEND_MESSAGES_COUNT)]
 
         good_receivers = self.launch_receivers(good_recv_count_list, iqa)
         broken_receivers = self.launch_receivers(broken_receivers_count_list, iqa, HangReceiver)
