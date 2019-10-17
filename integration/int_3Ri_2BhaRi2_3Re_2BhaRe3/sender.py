@@ -8,7 +8,7 @@ import logging
 import math
 
 from iqa_common.utils.timeout import TimeoutCallback
-from proton import Message
+from proton import Message, Delivery
 from proton._handlers import MessagingHandler
 from proton._reactor import Container, AtLeastOnce
 
@@ -22,8 +22,9 @@ class Sender(MessagingHandler, threading.Thread):
     lock = threading.Lock()
 
     def __init__(self, url, message_count, sender_id, message_size=1024, timeout=0,
-                 user_id=None, proton_option=AtLeastOnce(), use_unique_body=False):
-        super(Sender, self).__init__()
+                 user_id=None, proton_option=AtLeastOnce(), use_unique_body=False,
+                 auto_accept=True, auto_settle=True):
+        super(Sender, self).__init__(auto_accept=auto_accept, auto_settle=auto_settle)
         threading.Thread.__init__(self)
         self.url = url
         self.total = message_count
@@ -31,9 +32,12 @@ class Sender(MessagingHandler, threading.Thread):
         self.sender = None
         self.connection = None
         self.sent = 0
-        self.confirmed = 0
+        self.accepted = 0
         self.released = 0
         self.rejected = 0
+        self.modified = 0
+        self.settled = 0
+        self._timed_out = False
         self.container = None
         self.message_size = message_size
 
@@ -60,6 +64,14 @@ class Sender(MessagingHandler, threading.Thread):
         # Internal variable to control whether or not sender was stopped
         self._stopped = False
 
+    @property
+    def timed_out(self):
+        return self._timed_out
+
+    def timeout_stop_sender(self):
+        self._timed_out = True
+        self.stop_sender()
+
     def run(self):
         """
         Starts the thread and the Proton Container
@@ -67,7 +79,7 @@ class Sender(MessagingHandler, threading.Thread):
         """
         # If a timeout has been given, use it
         if self.timeout_secs > 0:
-            self.timeout_handler = TimeoutCallback(self.timeout_secs, self.stop_sender)
+            self.timeout_handler = TimeoutCallback(self.timeout_secs, self.timeout_stop_sender)
 
         self.container = Container(self)
         self.container.run()
@@ -134,21 +146,27 @@ class Sender(MessagingHandler, threading.Thread):
 
     def on_accepted(self, event):
         """
-        Increases the confirmed count (if delivery not yet in tracker list).
+        Increases the accepted count (if delivery not yet in tracker list).
         :param event:
         :return:
         """
         if event.delivery not in self.tracker:
             logging.debug('Ignoring confirmation for other deliveries - %s' % event.delivery.tag)
-        self.confirmed += 1
+        self.accepted += 1
         self.verify_sender_done(event)
 
+    def on_modified(self, event):
+        self.modified += 1
+
+    def on_settled(self, event):
+        self.settled += 1
+
     def on_released(self, event):
-        """
-        Increases the released count
-        :param event:
-        :return:
-        """
+        # from qpid_dispatch system tests:
+        # for some reason Proton 'helpfully' calls on_released even though the
+        # delivery state is actually MODIFIED
+        if event.delivery.remote_state == Delivery.MODIFIED:
+            return self.on_modified(event)
         self.released += 1
         logging.debug('Message released - %s' % event.delivery.tag)
 
