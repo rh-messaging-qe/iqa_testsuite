@@ -44,10 +44,11 @@ def pytest_generate_tests(metafunc):
         routers.append(router.node.hostname)
 
     # Broker queues
-    broker_queues = ['brokeri2.durable.queue', 'brokeri2.nondurable.queue', 'brokere3.durable.queue',
-                     'brokere3.nondurable.queue', 'interior.autolink.durable.queue',
-                     'interior.autolink.nondurable.queue', 'edge.autolink.durable.queue',
-                     'edge.autolink.nondurable.queue']
+    broker_queues = ['edge.autolink.durable.queue']
+#    broker_queues = ['brokeri2.durable.queue', 'brokeri2.nondurable.queue', 'brokere3.durable.queue',
+#                     'brokere3.nondurable.queue', 'interior.autolink.durable.queue',
+#                     'interior.autolink.nondurable.queue', 'edge.autolink.durable.queue',
+#                     'edge.autolink.nondurable.queue']
 
     # Address translation tuple
     address_translation_tuple = [
