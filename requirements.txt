@@ -1,7 +1,7 @@
-git+git://github.com/rh-messaging-qe/iqa_common@devel#egg=iqa_common
-git+git://github.com/rh-messaging-qe/messaging_abstract@devel#egg=messaging_abstract
-git+git://github.com/rh-messaging-qe/messaging_components@devel#egg=messaging_components
-git+git://github.com/rh-messaging-qe/pytest_iqa@devel#egg=pytest_iqa
+git+https://github.com/rh-messaging-qe/iqa_common@devel#egg=iqa_common
+git+https://github.com/rh-messaging-qe/messaging_abstract@devel#egg=messaging_abstract
+git+https://github.com/rh-messaging-qe/messaging_components@devel#egg=messaging_components
+git+https://github.com/rh-messaging-qe/pytest_iqa@devel#egg=pytest_iqa
 optconstruct
 pytest
 docker
